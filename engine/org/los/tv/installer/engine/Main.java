@@ -163,6 +163,14 @@ public final class Main {
             return;
         }
         log("SRC " + src);
+        // Payload companions (kernel, initrd.img, ramdisk-recovery.img)
+        // live next to the payload file, which may sit nested
+        // (Ventoy/extracted trees) rather than at the mount root.
+        String payDir = new java.io.File(sysimg).getParent();
+        if (payDir == null) {
+            payDir = src;
+        }
+        log("DBG paydir: " + payDir);
         // Never install onto the media we booted from.
         if (srcDev != null && sameDisk(disk, srcDev)) {
             fail("same_disk");
@@ -242,19 +250,28 @@ public final class Main {
                 failArg("extend_system", slot);
                 return;
             }
-            if (exec(new String[] {"cp", src + "/kernel",
+            if ("b".equals(slot)) {
+                // OTA reserve: empty 50M sparse placeholder, the updater
+                // fills kernel_b on the next OTA package.
+                if (exec(new String[] {"dd", "if=/dev/zero",
+                                "of=" + mnt + "/kernel_" + slot, "bs=1M",
+                                "count=0", "seek=50"}) != 0) {
+                    failArg("copy_kernel", slot);
+                    return;
+                }
+            } else if (exec(new String[] {"cp", payDir + "/kernel",
                             mnt + "/kernel_" + slot}) != 0) {
                 failArg("copy_kernel", slot);
                 return;
             }
-            if (exec(new String[] {"cp", src + "/initrd.img",
+            if (exec(new String[] {"cp", payDir + "/initrd.img",
                             mnt + "/initrd_" + slot + ".img"}) != 0) {
                 failArg("copy_initrd", slot);
                 return;
             }
-            if (new java.io.File(src + "/ramdisk-recovery.img").exists()
+            if (new java.io.File(payDir + "/ramdisk-recovery.img").exists()
                     && exec(new String[] {"cp",
-                                    src + "/ramdisk-recovery.img",
+                                    payDir + "/ramdisk-recovery.img",
                                     mnt + "/recovery_" + slot + ".img"})
                             != 0) {
                 failArg("copy_recovery", slot);
