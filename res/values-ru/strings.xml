@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Установщик</string>
+    <!-- Приветствие -->
+    <string name="welcome_title">Добро пожаловать</string>
+    <string name="welcome_text">Установка системы на диск этого устройства.\nВсе данные на выбранном диске будут удалены.</string>
+    <string name="continue_btn">Продолжить</string>
+    <string name="welcome_live">Отмена: ознакомиться с системой</string>
+    <!-- Шаги -->    <!-- Диск -->
+    <string name="disk_title">Выбор диска</string>
+    <string name="disk_empty">Диски не найдены</string>
+    <string name="disk_gb">%.1f ГБ</string>
+    <string name="disk_usb">  [USB]</string>
+    <!-- Режим -->
+    <string name="mode_title">Режим: %1$s</string>
+    <string name="mode_wipe">Весь диск (стереть всё)</string>
+    <string name="mode_part">Существующий раздел (формат)</string>
+    <string name="opt_dataimg">data.img вместо каталога data</string>
+    <string name="opt_datasize_hint">Размер data.img, МБ (0 = максимум)</string>
+    <string name="opt_nomodeset">nomodeset в cmdline</string>
+    <string name="opt_blacklist">blacklist nouveau</string>
+    <string name="next_btn">Далее</string>
+    <!-- Раздел -->
+    <string name="part_title">Выбор раздела: %1$s</string>
+    <string name="part_warn">Раздел будет отформатирован!</string>
+    <!-- Прогресс -->
+    <string name="progress_title">Установка…</string>
+    <!-- Движок -->
+    <string name="err_no_disk">Не выбран диск.</string>
+    <string name="err_job_write">Не удалось записать задание.</string>
+    <string name="job_sent">Задание отправлено, жду движок (до 30 мин)…</string>
+    <string name="err_timeout">Таймаут ожидания движка.</string>
+    <string name="status_done">Статус: %1$s</string>
+    <string name="inst_target">Диск: %1$s режим: %2$s</string>
+    <string name="inst_src">Носитель: %1$s</string>
+    <string name="inst_part">Раздел: %1$s ESP: %2$s</string>
+    <string name="inst_uuid">UUID раздела: %1$s</string>
+    <string name="inst_windows">Найден Windows: %1$s</string>
+    <string name="inst_ok_slots">Слоты A/B записаны.</string>
+    <string name="inst_ok_fstab">fstab.android записан.</string>
+    <string name="inst_ok_bootcfg">bootcfg записан.</string>
+    <string name="inst_ok_uefi">UEFI установлен.</string>
+    <string name="inst_ok_efiboot">Запись загрузки назначена дефолтной.</string>
+    <string name="inst_ok_bioscfg">BIOS grub.cfg записан.</string>
+    <string name="inst_ok_grub">GRUB установлен.</string>
+    <string name="inst_ok_done">Готово.</string>
+    <string name="inst_warn_noesp">ESP нет — UEFI пропущен.</string>
+    <string name="inst_warn_efiorder">Порядок загрузки не задан (%1$s) — выбери диск в boot-меню BIOS.</string>
+    <string name="inst_err_no_disk">Ошибка диска.</string>
+    <string name="inst_err_no_media">Ошибка носителя установки.</string>
+    <string name="inst_err_chmod_tools">Ошибка прав инструментов.</string>
+    <string name="inst_err_gpt_new">Не удалось создать GPT.</string>
+    <string name="inst_err_esp_part">Не удалось создать ESP.</string>
+    <string name="inst_err_system_part">Не удалось создать раздел system.</string>
+    <string name="inst_err_mkfs_esp">Не удалось отформатировать ESP.</string>
+    <string name="inst_err_mkfs">Ошибка создания ФС.</string>
+    <string name="inst_err_mount">Ошибка монтирования.</string>
+    <string name="inst_err_copy_system">Ошибка копирования system (%1$s).</string>
+    <string name="inst_err_extend_system">Ошибка расширения system (%1$s).</string>
+    <string name="inst_err_copy_kernel">Ошибка копирования kernel (%1$s).</string>
+    <string name="inst_err_copy_initrd">Ошибка копирования initrd (%1$s).</string>
+    <string name="inst_err_copy_recovery">Ошибка копирования recovery (%1$s).</string>
+    <string name="inst_err_misc_img">Ошибка создания misc.img.</string>
+    <string name="inst_err_data_img">Ошибка создания data.img.</string>
+    <string name="inst_err_mkfs_data">Ошибка форматирования data.</string>
+    <string name="inst_err_mount_esp">Ошибка монтирования ESP.</string>
+    <string name="inst_err_efi_bin">Ошибка копирования BOOTX64.EFI.</string>
+    <string name="inst_err_efi_mods">Ошибка копирования EFI-модулей.</string>
+    <string name="status_ok">готово</string>
+    <string name="status_error">ошибка</string>
+    <string name="refresh_btn">Обновить</string>
+    <string name="reboot_btn">Перезагрузить</string>
+    <string name="options_btn">Параметры</string>
+    <string name="options_title">Параметры</string>
+    <string name="inst_err_same_disk">Цель совпадает с носителем установки.</string>
+</resources>

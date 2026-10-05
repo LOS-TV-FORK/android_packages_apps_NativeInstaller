@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+     Native live installer allowlist.
+-->
+<permissions>
+    <privapp-permissions package="org.los.tv.installer">
+        <permission name="android.permission.CHANGE_COMPONENT_ENABLED_STATE" />
+        <permission name="android.permission.START_ACTIVITIES_FROM_BACKGROUND" />
+        <permission name="android.permission.REBOOT" />
+    </privapp-permissions>
+</permissions>

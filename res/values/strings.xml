@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Installer</string>
+    <!-- Welcome -->
+    <string name="welcome_title">Welcome</string>
+    <string name="welcome_text">Installing the system to this device\'s disk.\nAll data on the selected disk will be erased.</string>
+    <string name="continue_btn">Continue</string>
+    <string name="welcome_live">Cancel: explore the system</string>
+    <!-- Steps -->    <!-- Disk -->
+    <string name="disk_title">Select disk</string>
+    <string name="disk_empty">No disks found</string>
+    <string name="disk_gb">%.1f GB</string>
+    <string name="disk_usb">  [USB]</string>
+    <!-- Mode -->
+    <string name="mode_title">Mode: %1$s</string>
+    <string name="mode_wipe">Whole disk (erase everything)</string>
+    <string name="mode_part">Existing partition (format)</string>
+    <string name="opt_dataimg">data.img instead of data directory</string>
+    <string name="opt_datasize_hint">data.img size, MB (0 = maximum)</string>
+    <string name="opt_nomodeset">nomodeset in cmdline</string>
+    <string name="opt_blacklist">blacklist nouveau</string>
+    <string name="next_btn">Next</string>
+    <!-- Partition -->
+    <string name="part_title">Select partition: %1$s</string>
+    <string name="part_warn">The partition will be formatted!</string>
+    <!-- Progress -->
+    <string name="progress_title">Installing…</string>
+    <!-- Engine -->
+    <string name="err_no_disk">No disk selected.</string>
+    <string name="err_job_write">Failed to submit the job.</string>
+    <string name="job_sent">Job submitted, waiting for the engine (up to 30 min)…</string>
+    <string name="err_timeout">Engine wait timed out.</string>
+    <string name="status_done">Status: %1$s</string>
+    <string name="inst_target">Target: %1$s mode %2$s</string>
+    <string name="inst_src">Media: %1$s</string>
+    <string name="inst_part">Partition: %1$s ESP: %2$s</string>
+    <string name="inst_uuid">Partition UUID: %1$s</string>
+    <string name="inst_windows">Windows found: %1$s</string>
+    <string name="inst_ok_slots">A/B slots written.</string>
+    <string name="inst_ok_fstab">fstab.android written.</string>
+    <string name="inst_ok_bootcfg">bootcfg written.</string>
+    <string name="inst_ok_uefi">UEFI installed.</string>
+    <string name="inst_ok_efiboot">Boot entry registered as default.</string>
+    <string name="inst_ok_bioscfg">BIOS grub.cfg written.</string>
+    <string name="inst_ok_grub">GRUB installed.</string>
+    <string name="inst_ok_done">Done.</string>
+    <string name="inst_warn_noesp">No ESP — UEFI skipped.</string>
+    <string name="inst_warn_efiorder">Boot order not set (%1$s) — pick the disk in BIOS boot menu.</string>
+    <string name="inst_err_no_disk">Disk error.</string>
+    <string name="inst_err_no_media">Install media error.</string>
+    <string name="inst_err_chmod_tools">Tools permission error.</string>
+    <string name="inst_err_gpt_new">Failed to create GPT.</string>
+    <string name="inst_err_esp_part">Failed to create ESP.</string>
+    <string name="inst_err_system_part">Failed to create system partition.</string>
+    <string name="inst_err_mkfs_esp">Failed to format ESP.</string>
+    <string name="inst_err_mkfs">Filesystem creation error.</string>
+    <string name="inst_err_mount">Mount error.</string>
+    <string name="inst_err_copy_system">System image copy error (%1$s).</string>
+    <string name="inst_err_extend_system">System image extend error (%1$s).</string>
+    <string name="inst_err_copy_kernel">Kernel copy error (%1$s).</string>
+    <string name="inst_err_copy_initrd">Initrd copy error (%1$s).</string>
+    <string name="inst_err_copy_recovery">Recovery copy error (%1$s).</string>
+    <string name="inst_err_misc_img">misc.img creation error.</string>
+    <string name="inst_err_data_img">data.img creation error.</string>
+    <string name="inst_err_mkfs_data">data format error.</string>
+    <string name="inst_err_mount_esp">ESP mount error.</string>
+    <string name="inst_err_efi_bin">BOOTX64.EFI copy error.</string>
+    <string name="inst_err_efi_mods">EFI modules copy error.</string>
+    <string name="status_ok">done</string>
+    <string name="status_error">error</string>
+    <string name="refresh_btn">Refresh</string>
+    <string name="reboot_btn">Reboot</string>
+    <string name="options_btn">Options</string>
+    <string name="options_title">Options</string>
+    <string name="inst_err_same_disk">Target is the install media itself.</string>
+</resources>
