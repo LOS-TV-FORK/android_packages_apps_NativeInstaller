@@ -171,6 +171,16 @@ public final class Main {
             payDir = src;
         }
         log("DBG paydir: " + payDir);
+        // system.efs/sfs is a WRAPPER around the real ext4 system.img
+        // (like Calamares ota+make-ab): mount it ro and install the
+        // inner image, never the wrapper itself. A wrapper mounted -r
+        // forces its inner loop read-only and the installed system can
+        // never remount rw (/sbin, Magisk).
+        String sysSrc = unwrapPayload(sysimg);
+        if (sysSrc == null) {
+            sysSrc = sysimg;
+        }
+        log("DBG syssrc: " + sysSrc);
         // Never install onto the media we booted from.
         if (srcDev != null && sameDisk(disk, srcDev)) {
             fail("same_disk");
@@ -237,11 +247,21 @@ public final class Main {
         }
 
         // --- 3. ota: A/B slots from the single ISO payload ---
+        // Like Calamares ota+make-ab: slot A gets the image, slot B
+        // stays an empty sparse placeholder for the future OTA (which
+        // fills it and flips the slot). Copying payload into B only
+        // wastes disk and install time.
         for (String slot : new String[] {"a", "b"}) {
-            if (exec(new String[] {"cp", sysimg, mnt + "/system_" + slot
-                            + ".img"}) != 0) {
-                failArg("copy_system", slot);
-                return;
+            if ("a".equals(slot)) {
+                if (exec(new String[] {"cp", sysSrc,
+                                mnt + "/system_" + slot + ".img"}) != 0) {
+                    failArg("copy_system", slot);
+                    return;
+                }
+            } else {
+                // Empty sparse slot, same shape, no content.
+                new java.io.File(mnt + "/system_" + slot + ".img")
+                        .delete();
             }
             // Extend to 8G sparse (dd seek writes nothing).
             if (exec(new String[] {"dd", "if=/dev/zero",
@@ -280,6 +300,7 @@ public final class Main {
         }
         log("OK slots");
         log("PCT 40");
+        execQuiet(new String[] {"umount", WORK + "paymnt"});
 
         // --- 4. gen-img: misc + data ---
         new java.io.File(mnt + "/data").mkdirs();
@@ -852,6 +873,36 @@ public final class Main {
             return WORK + "isomnt";
         }
         execQuiet(new String[] {"losetup", "-d", loop});
+        return null;
+    }
+
+    /**
+     * Payload wrappers (system.efs erofs / system.sfs squashfs) contain
+     * the real ext4 system.img inside. Mount the wrapper ro and return
+     * the inner image path; null when the payload IS the image.
+     * The mount stays up until the slots are copied (released below).
+     */
+    private static String unwrapPayload(String sysimg) {
+        String pmnt = WORK + "paymnt";
+        new java.io.File(pmnt).mkdirs();
+        execQuiet(new String[] {"umount", "-l", pmnt});
+        String[] guess = {"erofs", "squashfs", "ext4", "iso9660"};
+        for (String t : guess) {
+            if (execQuiet(new String[] {"mount", "-t", t, "-o", "ro",
+                            sysimg, pmnt}) != 0) {
+                continue;
+            }
+            String inner = pick(pmnt, new String[] {"system.img"});
+            if (inner != null) {
+                log("DBG unwrapped " + sysimg + " -> " + inner);
+                return inner;
+            }
+            execQuiet(new String[] {"umount", pmnt});
+            // Mounted but no inner image: payload is used as-is.
+            logD("DBG payload has no inner system.img (" + t + ")");
+            return null;
+        }
+        logD("DBG payload not mountable, using as-is");
         return null;
     }
 
