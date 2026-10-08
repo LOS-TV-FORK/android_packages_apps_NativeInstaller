@@ -65,4 +65,21 @@
     <string name="options_btn">Tùy chọn</string>
     <string name="options_title">Tùy chọn</string>
     <string name="inst_err_same_disk">Đích chính là phương tiện cài đặt.</string>
+    <string name="mode_alongside">Cài cạnh (thu nhỏ, giữ hệ khác)</string>
+    <string name="part_alongside_warn">Các hệ khác được giữ. Chọn phân vùng để thu nhỏ (ext4/fat/ntfs) hoặc vùng trống.</string>
+    <string name="part_free_space">Vùng trống (không thu nhỏ)</string>
+    <string name="part_scanning">Đang quét đĩa…</string>
+    <string name="scan_title">Hệ trên %1$s</string>
+    <string name="scan_none">Không còn hệ khác</string>
+    <string name="scan_none_sub">Đĩa trống: xóa hoặc dùng phân vùng.</string>
+    <string name="scan_found_sub">Thấy %1$d. Đã chọn cài cạnh.</string>
+    <string name="part_scan_empty">Trống: engine không đáp. Xem log.</string>
+    <string name="part_scan_found">Bản đồ: %1$d vùng, %2$d trống.</string>
+    <string name="inst_err_shrink_unsupported">FS này không thu nhỏ được.</string>
+    <string name="inst_err_shrink_fsck">Kiểm tra FS trước thu nhỏ thất bại.</string>
+    <string name="inst_err_shrink_fs">Thu nhỏ FS thất bại.</string>
+    <string name="inst_err_shrink_part">Thu nhỏ phân vùng thất bại.</string>
+    <string name="inst_err_no_space">Thiếu chỗ.</string>
+    <string name="inst_err_too_small">Cỡ quá nhỏ (cần %1$s).</string>
+    <string name="inst_err_part_parse">Không đọc được bảng phân vùng.</string>
 </resources>

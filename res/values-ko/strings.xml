@@ -65,4 +65,21 @@
     <string name="options_btn">옵션</string>
     <string name="options_title">옵션</string>
     <string name="inst_err_same_disk">대상이 설치 미디어 자체입니다.</string>
+    <string name="mode_alongside">나란히(축소, 시스템 유지)</string>
+    <string name="part_alongside_warn">다른 시스템은 유지됩니다. 축소할 파티션(ext4/fat/ntfs) 또는 여유 공간 선택.</string>
+    <string name="part_free_space">여유 공간(축소 없음)</string>
+    <string name="part_scanning">디스크 스캔 중…</string>
+    <string name="scan_title">%1$s의 시스템</string>
+    <string name="scan_none">다른 시스템 없음</string>
+    <string name="scan_none_sub">빈 디스크: 지우거나 파티션 사용.</string>
+    <string name="scan_found_sub">%1$d개 발견. 나란히 선택됨.</string>
+    <string name="part_scan_empty">비어 있음: 엔진 무응답. 로그 확인.</string>
+    <string name="part_scan_found">맵: 파티션 %1$d, 여유 %2$d.</string>
+    <string name="inst_err_shrink_unsupported">이 FS 축소 불가.</string>
+    <string name="inst_err_shrink_fsck">축소 전 FS 검사 실패.</string>
+    <string name="inst_err_shrink_fs">FS 축소 실패.</string>
+    <string name="inst_err_shrink_part">파티션 축소 실패.</string>
+    <string name="inst_err_no_space">공간 부족.</string>
+    <string name="inst_err_too_small">크기 너무 작음(필요 %1$s).</string>
+    <string name="inst_err_part_parse">파티션 테이블 읽기 실패.</string>
 </resources>

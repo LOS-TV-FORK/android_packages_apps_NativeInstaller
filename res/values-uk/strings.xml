@@ -65,4 +65,21 @@
     <string name="options_btn">Параметри</string>
     <string name="options_title">Параметри</string>
     <string name="inst_err_same_disk">Ціль збігається з носієм.</string>
+    <string name="mode_alongside">Поруч (стиснути, зберегти системи)</string>
+    <string name="part_alongside_warn">Інші системи зберігаються. Вибери розділ для стиснення (ext4/fat/ntfs) або вільне місце.</string>
+    <string name="part_free_space">Вільне місце (без стиснення)</string>
+    <string name="part_scanning">Сканую диск…</string>
+    <string name="scan_title">Системи на %1$s</string>
+    <string name="scan_none">Інших систем немає</string>
+    <string name="scan_none_sub">Диск порожній: стирай або використай розділ.</string>
+    <string name="scan_found_sub">Знайдено: %1$d. Обрано поруч.</string>
+    <string name="part_scan_empty">Порожньо: рушій не відповів. Дивись лог.</string>
+    <string name="part_scan_found">Карта: розділів %1$d, вільних %2$d.</string>
+    <string name="inst_err_shrink_unsupported">Цю ФС стиснути не можна.</string>
+    <string name="inst_err_shrink_fsck">Перевірка ФС перед стисненням не пройшла.</string>
+    <string name="inst_err_shrink_fs">Не вдалося стиснути ФС.</string>
+    <string name="inst_err_shrink_part">Не вдалося стиснути розділ.</string>
+    <string name="inst_err_no_space">Мало місця.</string>
+    <string name="inst_err_too_small">Розмір малий (треба %1$s).</string>
+    <string name="inst_err_part_parse">Таблиця розділів не читається.</string>
 </resources>

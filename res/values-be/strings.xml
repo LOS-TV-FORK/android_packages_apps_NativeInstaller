@@ -65,4 +65,21 @@
     <string name="options_btn">Параметры</string>
     <string name="options_title">Параметры</string>
     <string name="inst_err_same_disk">Мэта супадае з носьбітам.</string>
+    <string name="mode_alongside">Побач (сціснуць, захаваць сістэмы)</string>
+    <string name="part_alongside_warn">Іншыя сістэмы захоўваюцца. Выберы падзел для сціскання (ext4/fat/ntfs) або вольнае месца.</string>
+    <string name="part_free_space">Вольнае месца (без сціскання)</string>
+    <string name="part_scanning">Сканую дыск…</string>
+    <string name="scan_title">Сістэмы на %1$s</string>
+    <string name="scan_none">Іншых сістэм няма</string>
+    <string name="scan_none_sub">Дыск пусты: сцірай або выкарыстай падзел.</string>
+    <string name="scan_found_sub">Знойдзена сістэм: %1$d. Выбрана «побач».</string>
+    <string name="part_scan_empty">Скан пусты: рухавік не адказаў. Глядзі лог.</string>
+    <string name="part_scan_found">Карта дыска: падзелаў %1$d, вольных месцаў %2$d.</string>
+    <string name="inst_err_shrink_unsupported">Гэтую ФС сціснуць нельга.</string>
+    <string name="inst_err_shrink_fsck">Праверка ФС перад сцісканнем не прайшла.</string>
+    <string name="inst_err_shrink_fs">Не атрымалася сціснуць ФС.</string>
+    <string name="inst_err_shrink_part">Не атрымалася сціснуць падзел.</string>
+    <string name="inst_err_no_space">Мала месца.</string>
+    <string name="inst_err_too_small">Памер малы (трэба %1$s).</string>
+    <string name="inst_err_part_parse">Не чытаецца табліца падзелаў.</string>
 </resources>

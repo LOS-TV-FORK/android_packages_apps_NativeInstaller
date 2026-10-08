@@ -65,4 +65,21 @@
     <string name="options_btn">Opzioni</string>
     <string name="options_title">Opzioni</string>
     <string name="inst_err_same_disk">Il target è il supporto stesso.</string>
+    <string name="mode_alongside">Accanto (riduci, conserva i sistemi)</string>
+    <string name="part_alongside_warn">Gli altri sistemi restano. Scegli partizione da ridurre (ext4/fat/ntfs) o spazio libero.</string>
+    <string name="part_free_space">Spazio libero (senza ridurre)</string>
+    <string name="part_scanning">Scansione disco…</string>
+    <string name="scan_title">Sistemi su %1$s</string>
+    <string name="scan_none">Nessun altro sistema</string>
+    <string name="scan_none_sub">Disco vuoto: cancella o usa una partizione.</string>
+    <string name="scan_found_sub">%1$d sistema/i. Accanto preselezionato.</string>
+    <string name="part_scan_empty">Vuoto: il motore non risponde. Vedi log.</string>
+    <string name="part_scan_found">Mappa: %1$d partizione/i, %2$d liberi.</string>
+    <string name="inst_err_shrink_unsupported">Questo FS non riducibile.</string>
+    <string name="inst_err_shrink_fsck">Controllo FS prima di ridurre fallito.</string>
+    <string name="inst_err_shrink_fs">Riduzione FS fallita.</string>
+    <string name="inst_err_shrink_part">Riduzione partizione fallita.</string>
+    <string name="inst_err_no_space">Spazio insufficiente.</string>
+    <string name="inst_err_too_small">Dimensione troppo piccola (serve %1$s).</string>
+    <string name="inst_err_part_parse">Tabella partizioni illeggibile.</string>
 </resources>

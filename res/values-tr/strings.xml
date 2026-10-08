@@ -65,4 +65,21 @@
     <string name="options_btn">Seçenekler</string>
     <string name="options_title">Seçenekler</string>
     <string name="inst_err_same_disk">Hedef kurulum medyasının kendisi.</string>
+    <string name="mode_alongside">Yanına (küçült, sistemleri koru)</string>
+    <string name="part_alongside_warn">Diğer sistemler korunur. Küçültülecek bölümü (ext4/fat/ntfs) veya boş alanı seç.</string>
+    <string name="part_free_space">Boş alan (küçültmeden)</string>
+    <string name="part_scanning">Disk taranıyor…</string>
+    <string name="scan_title">%1$s üzerindeki sistemler</string>
+    <string name="scan_none">Başka sistem yok</string>
+    <string name="scan_none_sub">Boş disk: sil veya bölüm kullan.</string>
+    <string name="scan_found_sub">%1$d bulundu. Yanına seçildi.</string>
+    <string name="part_scan_empty">Boş: motor yanıt vermedi. Loga bak.</string>
+    <string name="part_scan_found">Harita: %1$d bölüm, %2$d boş.</string>
+    <string name="inst_err_shrink_unsupported">Bu FS küçültülemez.</string>
+    <string name="inst_err_shrink_fsck">Küçültme öncesi FS denetimi başarısız.</string>
+    <string name="inst_err_shrink_fs">FS küçültme başarısız.</string>
+    <string name="inst_err_shrink_part">Bölüm küçültme başarısız.</string>
+    <string name="inst_err_no_space">Yetersiz alan.</string>
+    <string name="inst_err_too_small">Boyut küçük (gerekli %1$s).</string>
+    <string name="inst_err_part_parse">Bölüm tablosu okunamadı.</string>
 </resources>

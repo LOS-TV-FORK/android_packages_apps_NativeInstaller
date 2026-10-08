@@ -48,6 +48,12 @@ public final class Main {
 
         String disk = job.get("disk");
         String mode = job.getOrDefault("mode", "disk");
+        if ("scan".equals(job.get("task"))) {
+            doScan();
+            status("done");
+            close();
+            return;
+        }
         log("TARGET " + disk + " " + mode);
         if (disk == null || disk.isEmpty()) {
             fail("no_disk");
@@ -190,30 +196,29 @@ public final class Main {
         // --- 2. Partition / format ---
         String target;
         String esp;
+        String tools = PRE + "/../tools";
+        String pbin = WORK + "bin/";
+        new java.io.File(pbin).mkdirs();
+        cp(tools + "/bin/parted", pbin + "parted");
+        cp(tools + "/bin/mkfs.vfat", pbin + "mkfs.vfat");
+        chmod755(pbin + "parted");
+        chmod755(pbin + "mkfs.vfat");
+        String penv = "LD_LIBRARY_PATH=" + tools + "/lib";
         if ("disk".equals(mode)) {
-            String tools = PRE + "/../tools";
-            String bin = WORK + "bin/";
-            new java.io.File(bin).mkdirs();
-            cp(tools + "/bin/parted", bin + "parted");
-            cp(tools + "/bin/mkfs.vfat", bin + "mkfs.vfat");
-            chmod755(bin + "parted");
-            chmod755(bin + "mkfs.vfat");
-            String env =
-                    "LD_LIBRARY_PATH=" + tools + "/lib";
-            if (execEnv(env, new String[] {bin + "parted", "-s", "-a",
+            if (execEnv(penv, new String[] {pbin + "parted", "-s", "-a",
                             "optimal", disk, "mklabel", "gpt"}) != 0) {
                 fail("gpt_new");
                 return;
             }
-            if (execEnv(env, new String[] {bin + "parted", "-s", "-a",
+            if (execEnv(penv, new String[] {pbin + "parted", "-s", "-a",
                             "optimal", disk, "mkpart", "ESP", "fat32", "1MiB",
                             "513MiB"}) != 0) {
                 fail("esp_part");
                 return;
             }
-            execEnv(env, new String[] {bin + "parted", "-s", disk, "set",
+            execEnv(penv, new String[] {pbin + "parted", "-s", disk, "set",
                     "1", "esp", "on"});
-            if (execEnv(env, new String[] {bin + "parted", "-s", "-a",
+            if (execEnv(penv, new String[] {pbin + "parted", "-s", "-a",
                             "optimal", disk, "mkpart", "system", "ext4",
                             "513MiB", "100%"}) != 0) {
                 fail("system_part");
@@ -223,11 +228,19 @@ public final class Main {
             esp = part(disk, 1);
             // Like aaropa: plain dosfstools mkfs.vfat, default sizing
             // (it picks a FAT32-valid geometry itself).
-            if (execEnv(env, new String[] {bin + "mkfs.vfat",
+            if (execEnv(penv, new String[] {pbin + "mkfs.vfat",
                             esp}) != 0) {
                 fail("mkfs_esp");
                 return;
             }
+        } else if ("alongside".equals(mode)) {
+            String[] ae = alongside(disk, job, pbin, penv,
+                    minSystemMb(sysSrc, payDir));
+            if (ae == null) {
+                return;
+            }
+            target = ae[0];
+            esp = ae[1];
         } else {
             target = disk;
             esp = findEsp(disk);
@@ -372,9 +385,17 @@ public final class Main {
         String uuid = out(new String[] {"blkid", "-s", "UUID", "-o", "value",
                 target});
         log("UUID " + uuid);
-        String win = findWindows();
-        if (!win.isEmpty()) {
-            log("WINDOWS " + win);
+        // Foreign OSes come with the job (scan screen detected once);
+        // never re-scan mounts inside the install itself.
+        List<String> oses = new ArrayList<>();
+        String oslist = job.getOrDefault("oslist", "");
+        if (!oslist.isEmpty()) {
+            for (String e : oslist.split(";;")) {
+                e = e.trim();
+                if (!e.isEmpty()) {
+                    oses.add(e);
+                }
+            }
         }
         if (esp != null) {
             String espMnt = WORK + "esp";
@@ -404,7 +425,8 @@ public final class Main {
             registerUefiBoot(disk, esp, mode);
             log("PCT 85");
         } else {
-            log("WARN noesp");
+            fail("no_esp");
+            return;
         }
 
         // --- 8. grub.cfg on system partition, mirrors aaropa 10_blissos:
@@ -464,13 +486,7 @@ public final class Main {
                 + " HWACCEL=0 ROOT=UUID=").append(uuid).append("\n");
         grub.append("    initrd /initrd$SLOT.img\n  }\n");
         grub.append("}\n");
-        if (!win.isEmpty()) {
-            grub.append("menuentry 'Windows' {\n");
-            grub.append("  insmod part_msdos\n  insmod part_gpt\n");
-            grub.append("  insmod fat\n  insmod chain\n");
-            grub.append(
-                    "  chainloader /EFI/Microsoft/Boot/bootmgfw.efi\n}\n");
-        }
+        appendOsEntries(grub, oses);
         grub.append("submenu 'Power options' {\n");
         grub.append("  menuentry 'Reboot' { reboot }\n");
         grub.append("  menuentry 'Poweroff' { halt }\n");
@@ -523,13 +539,19 @@ public final class Main {
             }
         }
         // Nested layouts (Ventoy/Rufus/extracted trees): search two levels.
+        // A hit counts only if the file really exists (tool error text
+        // must never become a path).
         for (String n : names) {
             String hit =
                     out(new String[] {"find", dir, "-maxdepth", "3", "-name",
                             n});
             hit = hit.trim();
             if (!hit.isEmpty()) {
-                return hit.split("\\s+")[0];
+                String first = hit.split("\\s+")[0];
+                logD("pick find -> " + first);
+                if (new java.io.File(first).exists()) {
+                    return first;
+                }
             }
         }
         return null;
@@ -783,6 +805,19 @@ public final class Main {
                 num = digits;
             }
         }
+        // Drop our stale entries first: every run must leave exactly
+        // one LineageOS record, or the firmware menu rots with dups.
+        String verbose = outLines(new String[] {"efibootmgr", "-v"});
+        for (String line : verbose.split("\n")) {
+            line = line.trim();
+            if (line.matches("(?i)boot[0-9a-f]{4}\\*?\\s+LineageOS.*")) {
+                String stale =
+                        line.substring(4, 8).toUpperCase(
+                                java.util.Locale.US);
+                logD("DBG removing stale LineageOS " + stale);
+                execQuiet(new String[] {"efibootmgr", "-b", stale, "-B"});
+            }
+        }
         String create = out(new String[] {"efibootmgr", "-c", "-d", efiDisk,
                 "-p", num, "-L", "LineageOS", "-l",
                 "\\EFI\\BOOT\\BOOTX64.EFI"});
@@ -816,7 +851,7 @@ public final class Main {
             }
         }
         if (bootnum == null) {
-            log("WARN efiorder nocreate");
+            fail("efi_create");
             return;
         }
         String order = "";
@@ -844,10 +879,30 @@ public final class Main {
             csv.append(seq.get(i));
         }
         if (exec(new String[] {"efibootmgr", "-o", csv.toString()})
-                == 0) {
+                != 0) {
+            fail("efi_order");
+            return;
+        }
+        // Read back: some firmwares (or a booted Windows) rewrite the
+        // order behind our back. Trust NVRAM, not the exit code.
+        String back = outLines(new String[] {"efibootmgr"});
+        String first = "";
+        for (String line : back.split("\n")) {
+            line = line.trim();
+            if (line.startsWith("BootOrder:")) {
+                String[] parts = line.substring(10).trim().split(",");
+                if (parts.length > 0) {
+                    first = parts[0].trim().toUpperCase(
+                            java.util.Locale.US);
+                }
+                break;
+            }
+        }
+        if (bootnum.toUpperCase(java.util.Locale.US).equals(first)) {
             log("OK efiboot");
         } else {
-            log("WARN efiorder setorder");
+            logD("DBG BootOrder readback: " + first);
+            fail("efi_order");
         }
     }
 
@@ -967,6 +1022,597 @@ public final class Main {
     }
 
     /** Mount dev ro, reusing an existing mount if present. */
+    /** ROOT=LABEL= value of the booted media (to skip it while probing). */
+    private static String bootLabel() {
+        try {
+            BufferedReader c =
+                    new BufferedReader(new FileReader("/proc/cmdline"));
+            String cmd = c.readLine();
+            c.close();
+            if (cmd != null) {
+                for (String tok : cmd.trim().split("\\s+")) {
+                    if (tok.startsWith("ROOT=LABEL=")) {
+                        return tok.substring(11);
+                    }
+                }
+            }
+        } catch (Exception ignored) {
+        }
+        return null;
+    }
+
+    /**
+     * Read-only scan: geometry from ONE parted call per disk (no mounts),
+     * OS probes mount only promising fstypes once (os-prober style).
+     * Seconds for a whole disk.
+     */
+    private static void doScan() {
+        log("SCAN begin");
+        String tools = PRE + "/../tools";
+        String pbin = WORK + "bin/";
+        new java.io.File(pbin).mkdirs();
+        try {
+            cp(tools + "/bin/parted", pbin + "parted");
+            chmod755(pbin + "parted");
+        } catch (Exception e) {
+            log("DBG parted setup: " + e);
+        }
+        String penv = "LD_LIBRARY_PATH=" + tools + "/lib";
+        java.util.Set<String> disks = new java.util.TreeSet<>();
+        for (String p : partitions()) {
+            String base = new java.io.File(p).getName();
+            String d = base.replaceFirst("p?\\d+$", "");
+            if (d.endsWith("p")) {
+                d = d.substring(0, d.length() - 1);
+            }
+            if (!d.isEmpty() && !d.startsWith("loop") && !d.startsWith("ram")
+                    && !d.startsWith("dm-")) {
+                disks.add(d);
+            }
+        }
+        for (String d : disks) {
+            String disk = "/dev/block/" + d;
+            long diskMb = diskSizeMb(d);
+            log("DISK " + disk + " " + diskMb);
+            String print = execParted(pbin, penv, disk);
+            if (print.isEmpty()) {
+                logD("DBG no parted output for " + disk);
+                continue;
+            }
+            boolean sawFree = false;
+            for (String line : print.split("\n")) {
+                line = line.trim();
+                String[] f = line.split("\\s+");
+                if (f.length < 3) {
+                    continue;
+                }
+                if (line.contains("Free Space")) {
+                    int freeIdx = -1;
+                    for (int i = 0; i < f.length; i++) {
+                        if (f[i].equals("Free")) {
+                            freeIdx = i;
+                            break;
+                        }
+                    }
+                    if (freeIdx >= 3) {
+                        try {
+                            long s = (long) parseMib(f[freeIdx - 3]);
+                            long e = (long) parseMib(f[freeIdx - 2]);
+                            log("FREE " + disk + " " + s + " " + e);
+                            sawFree = true;
+                        } catch (Exception ignored) {
+                        }
+                    }
+                    continue;
+                }
+                int num;
+                try {
+                    num = Integer.parseInt(f[0]);
+                } catch (Exception e) {
+                    continue;
+                }
+                try {
+                    long s = (long) parseMib(f[1]);
+                    long e = (long) parseMib(f[2]);
+                    String fstype = f.length > 4 ? f[4] : "";
+                    String dev = part(disk, num);
+                    String label = out(new String[] {"blkid", "-s", "LABEL",
+                            "-o", "value", dev}).trim().replaceAll(
+                                    "\\s+", "_");
+                    log("PART " + dev + " " + s + " " + e + " " + fstype
+                            + " " + label);
+                } catch (Exception ignored) {
+                }
+            }
+            if (!sawFree) {
+                // This parted prints no "Free Space" rows: derive gaps
+                // from the partition geometry itself.
+                for (double[] g : freeGaps(print, diskMb)) {
+                    log("FREE " + disk + " " + ((long) g[0]) + " "
+                            + ((long) g[1]));
+                }
+            }
+        }
+        detectOses();
+        payloadMin();
+        log("SCAN end");
+    }
+
+    /**
+     * Payload minimum for the alongside divider: inner system image (or
+     * the file itself) + kernel + initrd + recovery + buffer. Reuses
+     * only already-mounted media (no sweep): the live system booted
+     * from it, so it is usually right here.
+     */
+    private static void payloadMin() {
+        // Cheap sweeps first: findViaCmdline mounts every partition and
+        // costs ~25s, so it stays a fallback for media the sweep misses.
+        // (Loop-booted payloads like this box stay unresolved here;
+        // the install path resolves them with its full media sweep and
+        // enforces the minimum itself.)
+        String[] roots = {"/mnt", "/cdrom", "/boot"};
+        try {
+            BufferedReader mounts =
+                    new BufferedReader(new FileReader("/proc/mounts"));
+            String mline;
+            while ((mline = mounts.readLine()) != null) {
+                String[] f = mline.split("\\s+");
+                if (f.length >= 3 && f[2].equals("iso9660")) {
+                    String p = pick(f[1],
+                            new String[] {"system.efs", "system.sfs"});
+                    if (p != null) {
+                        log("MIN " + payloadMinFor(p));
+                        mounts.close();
+                        return;
+                    }
+                }
+            }
+            mounts.close();
+        } catch (Exception ignored) {
+        }
+        for (String r : roots) {
+            String p = pick(r, new String[] {"system.efs", "system.sfs"});
+            if (p != null) {
+                log("MIN " + payloadMinFor(p));
+                return;
+            }
+        }
+    }
+
+    private static long payloadMinFor(String sysimg) {
+        java.io.File base = new java.io.File(sysimg);
+        String dir = base.getParent();
+        if (dir == null) {
+            dir = "";
+        }
+        // Inner image when the payload is a wrapper, else the file.
+        long sys = fileMb(sysimg);
+        String inner = null;
+        String pmnt = WORK + "paymnt";
+        new java.io.File(pmnt).mkdirs();
+        execQuiet(new String[] {"umount", "-l", pmnt});
+        for (String t : new String[] {"erofs", "squashfs"}) {
+            if (execQuiet(new String[] {"mount", "-t", t, "-o", "ro",
+                            sysimg, pmnt}) == 0) {
+                String hit = pick(pmnt, new String[] {"system.img"});
+                execQuiet(new String[] {"umount", pmnt});
+                if (hit != null) {
+                    inner = hit;
+                }
+                break;
+            }
+        }
+        if (inner != null) {
+            sys = fileMb(inner);
+        }
+        long total = sys;
+        total += fileMb(dir + "/kernel");
+        total += fileMb(dir + "/initrd.img");
+        total += fileMb(dir + "/ramdisk-recovery.img");
+        total += 512;
+        return Math.max(total, 1024);
+    }
+
+    private static long diskSizeMb(String base) {
+        try {
+            BufferedReader r = new BufferedReader(
+                    new FileReader("/sys/block/" + base + "/size"));
+            long sectors = Long.parseLong(r.readLine().trim());
+            r.close();
+            return sectors / 2048;
+        } catch (Exception e) {
+            return -1;
+        }
+    }
+
+    private static String execParted(String pbin, String penv, String disk) {
+        try {
+            ProcessBuilder pb = new ProcessBuilder(
+                    pbin + "parted", "-s", disk, "unit", "MiB", "print");
+            java.util.Map<String, String> e = pb.environment();
+            e.put("LD_LIBRARY_PATH",
+                    penv.replaceFirst("^LD_LIBRARY_PATH=", ""));
+            pb.redirectErrorStream(true);
+            Process p = pb.start();
+            try {
+                p.getOutputStream().close();
+            } catch (Exception ignored) {
+            }
+            StringBuilder sb = new StringBuilder();
+            try (BufferedReader r = new BufferedReader(
+                    new InputStreamReader(p.getInputStream()))) {
+                String line;
+                while ((line = r.readLine()) != null) {
+                    sb.append(line).append('\n');
+                }
+            }
+            if (!p.waitFor(5, java.util.concurrent.TimeUnit.MINUTES)) {
+                p.destroyForcibly();
+                return "";
+            }
+            return sb.toString();
+        } catch (Exception e) {
+            return "";
+        }
+    }
+
+    private static double parseMib(String s) {
+        return Double.parseDouble(s.replace("MiB", ""));
+    }
+
+    /**
+     * Foreign-OS scan mirroring os-prober probes (efi/20microsoft,
+     * 20macosx, 90linux-distro) plus an Android-x86 probe os-prober
+     * lacks. Each partition mounted at most once, by blkid type;
+     * swap/crypto/LVM/optical/boot media never mounted.
+     */
+    private static List<String> detectOses() {
+        List<String> found = new ArrayList<>();
+        String bootLbl = bootLabel();
+        new java.io.File(WORK + "scan").mkdirs();
+        execQuiet(new String[] {"umount", "-l", WORK + "scan"});
+        for (String d : partitions()) {
+            String t = out(new String[] {"blkid", "-s", "TYPE", "-o",
+                    "value", d}).trim().toLowerCase(java.util.Locale.US);
+            if (t.contains("iso9660") || t.contains("udf")) {
+                continue;
+            }
+            if (t.contains("swap") || t.contains("crypto")
+                    || t.contains("LVM2") || t.contains("raid")
+                    || t.contains("zfs") || t.contains("pmem")) {
+                continue;
+            }
+            if (bootLbl != null && !bootLbl.isEmpty()) {
+                String lbl = out(new String[] {"blkid", "-s", "LABEL",
+                        "-o", "value", d}).trim();
+                if (bootLbl.equals(lbl)) {
+                    continue;
+                }
+            }
+            boolean ok = false;
+            if (!t.isEmpty()) {
+                ok = execQuiet(new String[] {"mount", "-t", t, "-o", "ro",
+                        d, WORK + "scan"}) == 0;
+            }
+            if (!ok) {
+                ok = execQuiet(new String[] {"mount", "-o", "ro", d,
+                        WORK + "scan"}) == 0;
+            }
+            if (!ok) {
+                continue;
+            }
+            String hit = classifyOs(WORK + "scan", t);
+            // Used space for the shrink math (df on the ro mount:
+            // instant, any filesystem).
+            long usedMb = diskUsedMb(WORK + "scan");
+            if (usedMb >= 0) {
+                log("USE " + d + " " + usedMb);
+            }
+            execQuiet(new String[] {"umount", WORK + "scan"});
+            if (hit != null) {
+                String line = hit + "|" + d;
+                log("OS " + line);
+                found.add(line);
+            }
+        }
+        return found;
+    }
+
+    /** Used MiB on dev via a throwaway ro mount, or -1 when unknown. */
+    private static long mountDfUsed(String dev, String fstype) {
+        String mnt = WORK + "measure";
+        try {
+            new java.io.File(mnt).mkdirs();
+            execQuiet(new String[] {"umount", "-l", mnt});
+            boolean ok = false;
+            if (fstype != null && !fstype.isEmpty()) {
+                ok = execQuiet(new String[] {"mount", "-t", fstype, "-o",
+                        "ro", dev, mnt}) == 0;
+            }
+            if (!ok) {
+                ok = execQuiet(new String[] {"mount", "-o", "ro", dev,
+                        mnt}) == 0;
+            }
+            if (!ok) {
+                return -1;
+            }
+            long used = diskUsedMb(mnt);
+            execQuiet(new String[] {"umount", mnt});
+            return used;
+        } catch (Exception e) {
+            return -1;
+        }
+    }
+
+    /** Used MiB on a mounted fs via statvfs (df), or -1. */
+    private static long diskUsedMb(String mnt) {        String o = outLines(new String[] {"df", mnt});
+        for (String line : o.split("\n")) {
+            line = line.trim();
+            if (line.startsWith("/dev/") || line.startsWith("overlay")
+                    || line.startsWith("tmpfs")) {
+                String[] f = line.split("\\s+");
+                // Filesystem 1K-blocks Used Available Use% Mounted on
+                if (f.length >= 4) {
+                    try {
+                        long totalKb = Long.parseLong(f[1]);
+                        long availKb = Long.parseLong(f[3]);
+                        return (totalKb - availKb) / 1024;
+                    } catch (Exception ignored) {
+                    }
+                }
+            }
+        }
+        return -1;
+    }
+
+    /** os-prober-faithful classification of a ro mount. */
+    private static String classifyOs(String mnt, String fstype) {
+        java.io.File m = new java.io.File(mnt);
+        // Windows EFI: EFI/<vendor>/Boot/{bcd AND bootmgfw.efi}.
+        String efi = ciDir(m, "EFI");
+        if (efi != null) {
+            String[] vendors = new java.io.File(m, efi).list();
+            if (vendors != null) {
+                for (String v : vendors) {
+                    if (v.equalsIgnoreCase("boot")) {
+                        continue;
+                    }
+                    String boot = ciPath(m, efi + "/" + v + "/Boot");
+                    if (boot != null && ciExists(m, boot + "/bcd")
+                            && ciExists(m, boot + "/bootmgfw.efi")) {
+                        return "win|Windows|\\"
+                                + boot.replace('/', '\\') + "\\"
+                                + ciName(m, boot + "/bootmgfw.efi");
+                    }
+                }
+            }
+        }
+        // Windows BIOS: ntfs + System32.
+        if ((fstype.contains("ntfs") || fstype.contains("exfat"))
+                && ciExists(m, "Windows/System32")) {
+            return "win|Windows|";
+        }
+        // macOS: hfsplus + mach_kernel, nothing else.
+        if (fstype.contains("hfs") && ciExists(m, "mach_kernel")) {
+            String ver = readPlistVersion(m);
+            String sys = ciPath(m, "System/Library/CoreServices");
+            return "macos|" + (ver == null ? "macOS" : ver) + "|"
+                    + (sys == null ? ""
+                            : "\\" + sys.replace('/', '\\') + "\\boot.efi");
+        }
+        // Linux: root proof first, then os-release.
+        if (hasLinuxRoot(m)) {
+            String[] names = readOsRelease(m, "etc/os-release,usr/lib/os-release");
+            if (names != null) {
+                return "linux|" + names[1] + "|";
+            }
+        }
+        // Android-x86: slot images + kernel aside.
+        String[] names = m.list();
+        if (names != null) {
+            boolean sys = false;
+            boolean kern = false;
+            for (String n : names) {
+                String ln = n.toLowerCase(java.util.Locale.US);
+                if ((ln.startsWith("system_") || ln.equals("system.img"))
+                        && (ln.endsWith(".img") || ln.endsWith(".efs")
+                                || ln.endsWith(".sfs"))) {
+                    sys = true;
+                }
+                if (ln.startsWith("kernel")) {
+                    kern = true;
+                }
+            }
+            if (sys && kern) {
+                String[] bp = readOsRelease(m, "build.prop");
+                return "android|" + (bp == null ? "Android-x86" : bp[0]) + "|";
+            }
+        }
+        return null;
+    }
+
+    private static String ciName(java.io.File base, String sub) {
+        int slash = sub.lastIndexOf('/');
+        String dir = slash < 0 ? "" : sub.substring(0, slash);
+        String want = slash < 0 ? sub : sub.substring(slash + 1);
+        java.io.File parent =
+                dir.isEmpty() ? base : new java.io.File(base, dir);
+        String[] kids = parent.list();
+        if (kids == null) {
+            return null;
+        }
+        for (String k : kids) {
+            if (k.equalsIgnoreCase(want)) {
+                return k;
+            }
+        }
+        return null;
+    }
+
+    private static boolean ciExists(java.io.File base, String sub) {
+        return ciPath(base, sub) != null;
+    }
+
+    private static String ciPath(java.io.File base, String sub) {
+        java.io.File cur = base;
+        for (String part : sub.split("/")) {
+            if (part.isEmpty()) {
+                continue;
+            }
+            String[] kids = cur.list();
+            if (kids == null) {
+                return null;
+            }
+            boolean ok = false;
+            for (String k : kids) {
+                if (k.equalsIgnoreCase(part)) {
+                    cur = new java.io.File(cur, k);
+                    ok = true;
+                    break;
+                }
+            }
+            if (!ok) {
+                return null;
+            }
+        }
+        String abs = cur.getAbsolutePath();
+        String root = base.getAbsolutePath();
+        return abs.substring(root.length() + 1);
+    }
+
+    private static String ciDir(java.io.File base, String name) {
+        String hit = ciPath(base, name);
+        if (hit != null && new java.io.File(base, hit).isDirectory()) {
+            return hit;
+        }
+        return null;
+    }
+
+    private static boolean hasLinuxRoot(java.io.File m) {
+        String[] libs = m.list();
+        if (libs != null) {
+            boolean boot = false;
+            boolean ld = false;
+            for (String k : libs) {
+                if (k.equalsIgnoreCase("boot")) {
+                    boot = true;
+                }
+                if (k.toLowerCase(java.util.Locale.US).startsWith("lib")) {
+                    String[] inner = new java.io.File(m, k).list();
+                    if (inner != null) {
+                        for (String f : inner) {
+                            if (f.startsWith("ld-") && f.endsWith(".so")) {
+                                ld = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+                if (boot && ld) {
+                    return true;
+                }
+            }
+        }
+        String[] inner = new java.io.File(m, "usr/lib").list();
+        if (inner != null) {
+            for (String f : inner) {
+                if (f.startsWith("ld-") && f.endsWith(".so")) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private static String readPlistVersion(java.io.File m) {
+        java.io.File plist = new java.io.File(m,
+                "System/Library/CoreServices/SystemVersion.plist");
+        if (!plist.exists()) {
+            return null;
+        }
+        try {
+            BufferedReader r = new BufferedReader(new FileReader(plist));
+            String line;
+            String wantName = null;
+            while ((line = r.readLine()) != null) {
+                line = line.trim();
+                if (line.contains("ProductName")) {
+                    String next = r.readLine();
+                    if (next != null) {
+                        wantName = next.replaceAll(".*<string>(.*)</string>.*",
+                                "$1").trim();
+                    }
+                }
+                if (line.contains("ProductVersion") && wantName != null) {
+                    String next = r.readLine();
+                    r.close();
+                    if (next != null) {
+                        return (wantName + " " + next.replaceAll(
+                                ".*<string>(.*)</string>.*", "$1").trim())
+                                .trim();
+                    }
+                    return wantName;
+                }
+            }
+            r.close();
+        } catch (Exception ignored) {
+        }
+        return null;
+    }
+
+    private static String[] readOsRelease(java.io.File mnt, String files) {
+        for (String f : files.split(",")) {
+            java.io.File file = new java.io.File(mnt, f.trim());
+            if (!file.exists()) {
+                continue;
+            }
+            try {
+                String name = null;
+                String pretty = null;
+                BufferedReader r = new BufferedReader(new FileReader(file));
+                String line;
+                while ((line = r.readLine()) != null) {
+                    line = line.trim();
+                    if (line.startsWith("NAME=") && name == null) {
+                        name = unquote(line.substring(5));
+                    } else if (line.startsWith("PRETTY_NAME=")
+                            && pretty == null) {
+                        pretty = unquote(line.substring(12));
+                    } else if (line.startsWith("ro.lineage.version=")) {
+                        String v = line.substring(19).trim();
+                        if (!v.isEmpty()) {
+                            name = "LineageOS";
+                            pretty = "LineageOS " + v;
+                        }
+                    } else if (line.startsWith("ro.bliss.version=")) {
+                        String v = line.substring(17).trim();
+                        if (!v.isEmpty()) {
+                            name = "BlissOS";
+                            pretty = "BlissOS " + v;
+                        }
+                    }
+                }
+                r.close();
+                if (pretty != null) {
+                    return new String[] {name == null ? pretty : name, pretty};
+                }
+                if (name != null) {
+                    return new String[] {name, name};
+                }
+            } catch (Exception ignored) {
+            }
+        }
+        return null;
+    }
+
+    private static String unquote(String v) {
+        v = v.trim();
+        if (v.startsWith("\"") && v.endsWith("\"") && v.length() > 1) {
+            v = v.substring(1, v.length() - 1);
+        }
+        return v;
+    }
+
     private static String mountRo(String dev) {
         new java.io.File(WORK + "isomnt").mkdirs();
         String base = dev.substring(dev.lastIndexOf('/') + 1);
@@ -1094,6 +1740,455 @@ public final class Main {
         return null;
     }
 
+    /** blkid UUID of a partition (for GRUB search). */
+    private static String uuidOf(String part) {
+        return out(new String[] {"blkid", "-s", "UUID", "-o", "value",
+                part}).trim();
+    }
+
+    /**
+     * GRUB entries for detected foreign OSes, mirroring stock
+     * 30_os-prober: EFI chainload by UUID, BIOS Windows via +1,
+     * other Android installs via their grub.cfg.
+     */
+    private static void appendOsEntries(StringBuilder grub, List<String> oses) {
+        for (String e : oses) {
+            // type|label|loader|part
+            String[] f = e.split("\\|", -1);
+            if (f.length < 4) {
+                continue;
+            }
+            String type = f[0];
+            String label = f[1].replace("'", "");
+            String loader = f[2].replace('\\', '/');
+            String part = f[3];
+            if ("android".equals(type)) {
+                String puuid = uuidOf(part);
+                if (puuid.isEmpty()) {
+                    continue;
+                }
+                grub.append("menuentry '").append(label).append(" (Android)' {\n");
+                grub.append("  insmod part_msdos\n  insmod part_gpt\n");
+                grub.append("  insmod ext2\n  insmod configfile\n");
+                grub.append("  search --no-floppy --fs-uuid --set=root ")
+                        .append(puuid).append("\n");
+                grub.append("  configfile /boot/grub/grub.cfg\n}\n");
+            } else if ("win".equals(type) && loader.isEmpty()) {
+                String puuid = uuidOf(part);
+                if (puuid.isEmpty()) {
+                    continue;
+                }
+                grub.append("menuentry '").append(label).append("' {\n");
+                grub.append("  insmod part_msdos\n  insmod part_gpt\n");
+                grub.append("  insmod chain\n");
+                grub.append("  search --no-floppy --fs-uuid --set=root ")
+                        .append(puuid).append("\n");
+                grub.append("  drivemap -s (hd0) ${root}\n");
+                grub.append("  chainloader +1\n}\n");
+            } else if (!loader.isEmpty()) {
+                String puuid = uuidOf(part);
+                if (puuid.isEmpty()) {
+                    continue;
+                }
+                grub.append("menuentry '").append(label).append("' {\n");
+                grub.append("  insmod part_msdos\n  insmod part_gpt\n");
+                grub.append(
+                        "  insmod fat\n  insmod exfat\n  insmod ntfs\n  insmod ext2\n  insmod hfsplus\n");
+                grub.append("  insmod chain\n");
+                grub.append("  search --no-floppy --fs-uuid --set=root ")
+                        .append(puuid).append("\n");
+                grub.append("  chainloader ").append(loader).append("\n}\n");
+            } else {
+                logD("DBG os without loader skipped: " + e);
+            }
+        }
+    }
+
+    /** Minimum slot size MB from real payload files + buffer. */
+    private static long minSystemMb(String sysSrc, String payDir) {
+        long total = 0;
+        total += fileMb(sysSrc);
+        total += fileMb(payDir + "/kernel");
+        total += fileMb(payDir + "/initrd.img");
+        total += fileMb(payDir + "/ramdisk-recovery.img");
+        total += 512;
+        return Math.max(total, 1024);
+    }
+
+    private static long fileMb(String path) {
+        try {
+            long len = new java.io.File(path).length();
+            return (len + 1048575) / 1048576;
+        } catch (Exception e) {
+            return 0;
+        }
+    }
+
+    private static String gb(long mb) {
+        if (mb >= 1024) {
+            return (mb / 1024) + "G";
+        }
+        return mb + "M";
+    }
+
+    /**
+     * Install-alongside: never wipes the disk (no mklabel). Either takes
+     * a free-space segment or shrinks apart (ext4 via e2fsck+resize2fs,
+     * fat via parted, ntfs via ntfsresize) and creates the system
+     * partition in the freed tail. Reuses an existing ESP or creates one.
+     */
+    private static String[] alongside(
+            String disk, Map<String, String> job, String pbin, String penv,
+            long minMb) {
+        int wantMb = 0;
+        try {
+            wantMb = Integer.parseInt(job.getOrDefault("asize", "0"));
+        } catch (Exception ignored) {
+        }
+        String apart = job.getOrDefault("apart", "").trim();
+        String print = execParted(pbin, penv, disk);
+        if (print.isEmpty()) {
+            fail("part_parse");
+            return null;
+        }
+        double diskMb =
+                diskSizeMb(new java.io.File(disk).getName());
+        String target = null;
+        if (apart.isEmpty()) {
+            double[] seg = largestFree(print, diskMb, minMb);
+            try {
+                long pin = Long.parseLong(job.getOrDefault("afree", "0"));
+                if (pin > 0) {
+                    double[] pinned = segmentWith(print, diskMb, pin);
+                    if (pinned != null) {
+                        seg = pinned;
+                    }
+                }
+            } catch (Exception ignored) {
+            }
+            if (seg == null) {
+                failArg("no_space", gb(wantMb > 0 ? wantMb : minMb));
+                return null;
+            }
+            if (wantMb > 0 && wantMb > seg[1] - seg[0]) {
+                log("DBG alongside clamped " + gb(wantMb) + " -> "
+                        + gb((long) (seg[1] - seg[0])));
+            }
+            double start = seg[0];
+            double end = wantMb > 0 ? start + wantMb : seg[1];
+            if (end > seg[1]) {
+                end = seg[1];
+            }
+            if (end - start < minMb) {
+                failArg("too_small", gb(minMb));
+                return null;
+            }
+            java.util.Set<String> before = new java.util.HashSet<>(partitions());
+            if (execEnv(penv, new String[] {pbin + "parted", "-s", "-a",
+                            "optimal", disk, "mkpart", "system", "ext4",
+                            mib(start), mib(end)}) != 0) {
+                fail("system_part");
+                return null;
+            }
+            target = newNode(before);
+            if (target == null) {
+                fail("system_part");
+                return null;
+            }
+        } else {
+            double[] info = partInfo(print, apart);
+            if (info == null) {
+                fail("part_parse");
+                return null;
+            }
+            double len = info[2] - info[1];
+            // Capacity first: adjacent hole + what the partition itself
+            // can give. Clamp, never fail — only a target that cannot
+            // even hold the minimum is a real error. The clamped total
+            // flows downstream (mkpart and everything after).
+            double holeSize = 0;
+            double holeEnd = info[2];
+            double[] hole = largestFree(print, diskMb, minMb);
+            if (hole != null && Math.abs(hole[0] - info[2]) < 2) {
+                holeSize = hole[1] - hole[0];
+                holeEnd = hole[1];
+            }
+            String fstype = out(new String[] {"blkid", "-s", "TYPE", "-o",
+                    "value", apart}).trim().toLowerCase(java.util.Locale.US);
+            double shrinkable;
+            long usedMb = mountDfUsed(apart, fstype);
+            if (usedMb >= 0) {
+                shrinkable = len - usedMb - 512;
+            } else {
+                shrinkable = len - 1024;
+            }
+            if (shrinkable < 0) {
+                shrinkable = 0;
+            }
+            double capacity = holeSize + shrinkable;
+            double wantTotal = wantMb > 0 ? wantMb : len / 2;
+            double total = Math.min(wantTotal, capacity);
+            if (total < minMb) {
+                failArg("too_small", gb(minMb));
+                return null;
+            }
+            if (total < wantTotal) {
+                log("DBG alongside clamped " + gb((long) wantTotal)
+                        + " -> " + gb((long) total));
+            }
+            double need = total - holeSize;
+            if (need < 0) {
+                need = 0;
+            }
+            double newEnd = info[2] - need;
+            if (need <= 0) {
+                logD("alongside reusing free tail, no shrink");
+            } else if (fstype.contains("ext4")) {
+                if (exec(new String[] {"e2fsck", "-f", "-y", apart}) > 2) {
+                    fail("shrink_fsck");
+                    return null;
+                }
+                long freeMb = extFreeMb(apart);
+                if (freeMb >= 0 && (len - need) > (len - freeMb + 512)) {
+                    failArg("no_space", gb((long) need));
+                    return null;
+                }
+                if (exec(new String[] {"resize2fs", apart,
+                                ((long) (len - need)) + "M"}) != 0) {
+                    fail("shrink_fs");
+                    return null;
+                }
+                if (execEnv(penv, new String[] {pbin + "parted",
+                                disk, "resizepart",
+                                String.valueOf((int) info[0]),
+                                mib(newEnd)}) != 0) {
+                    fail("shrink_part");
+                    return null;
+                }
+            } else if (fstype.contains("ntfs")) {
+                // Self-healing: dry run first (writes nothing). If the
+                // volume is dirty, repair it in place and re-verify —
+                // the user never sees shrink_fsck. Only a volume that
+                // survives repair still fails, and that one is truly
+                // unfixable from here.
+                if (execT(null, new String[] {"ntfsresize", "-n", "-s",
+                                ((long) (len - need)) + "M",
+                                apart}, true, TOOL_TIMEOUT_MIN) != 0) {
+                    logD("dirty ntfs, repairing " + apart);
+                    if (execT(null, new String[] {"fsck.ntfs", "-b", "-d",
+                                    apart}, true, TOOL_TIMEOUT_MIN) != 0
+                            || execT(null, new String[] {"ntfsresize",
+                                            "-n", "-s",
+                                            ((long) (len - need)) + "M",
+                                            apart},
+                                    true, TOOL_TIMEOUT_MIN) != 0) {
+                        fail("shrink_fsck");
+                        return null;
+                    }
+                }
+                if (execT(null, new String[] {"ntfsresize", "-f", "-s",
+                                ((long) (len - need)) + "M",
+                                apart}, true, 30) != 0) {
+                    fail("shrink_fs");
+                    return null;
+                }
+                if (execEnv(penv, new String[] {pbin + "parted",
+                                disk, "resizepart",
+                                String.valueOf((int) info[0]),
+                                mib(newEnd)}) != 0) {
+                    fail("shrink_part");
+                    return null;
+                }
+            } else if (fstype.contains("fat") || fstype.contains("vfat")) {
+                if (execEnv(penv, new String[] {pbin + "parted",
+                                disk, "resizepart",
+                                String.valueOf((int) info[0]),
+                                mib(newEnd)}) != 0) {
+                    fail("shrink_part");
+                    return null;
+                }
+            } else {
+                log("DBG shrink unsupported fs " + fstype + " on " + apart);
+                fail("shrink_unsupported");
+                return null;
+            }
+            java.util.Set<String> before = new java.util.HashSet<>(partitions());
+            if (execEnv(penv, new String[] {pbin + "parted", "-s", "-a",
+                            "optimal", disk, "mkpart", "system", "ext4",
+                            mib(newEnd), mib(holeEnd)}) != 0) {
+                fail("system_part");
+                return null;
+            }
+            target = newNode(before);
+            if (target == null) {
+                fail("system_part");
+                return null;
+            }
+        }
+        String esp = findEsp(disk);
+        if (esp == null) {
+                String repr = execParted(pbin, penv, disk);
+                double[] seg = largestFree(repr, diskMb, 513);
+            if (seg != null && seg[1] - seg[0] >= 513) {
+                java.util.Set<String> before =
+                        new java.util.HashSet<>(partitions());
+                if (execEnv(penv, new String[] {pbin + "parted", "-s", "-a",
+                                "optimal", disk, "mkpart", "ESP", "fat32",
+                                mib(seg[0]), mib(seg[0] + 513)}) == 0) {
+                    esp = newNode(before);
+                    if (esp != null) {
+                        String num = esp.replaceAll("^.*?(\\d+)$", "$1");
+                        execEnv(penv, new String[] {pbin + "parted", "-s",
+                                disk, "set", num, "esp", "on"});
+                        execEnv(penv, new String[] {pbin + "mkfs.vfat", esp});
+                    }
+                }
+            }
+            if (esp == null) {
+                log("WARN noesp");
+            }
+        }
+        log("DBG alongside target=" + target + " esp=" + esp);
+        return new String[] {target, esp};
+    }
+
+    private static String mib(double v) {
+        return ((long) v) + "MiB";
+    }
+
+    /** Largest free segment [start, end] MiB with size >= minMb, or null. */
+    /** Unpartitioned gaps [start, end] MiB from parted print + disk
+     * size. Never trusts "Free Space" rows: some parted builds omit
+     * them entirely (observed: 17G tail invisible). */
+    private static java.util.List<double[]> freeGaps(
+            String print, double diskMb) {
+        java.util.List<double[]> parts = new java.util.ArrayList<>();
+        for (String line : print.split("\n")) {
+            line = line.trim();
+            String[] f = line.split("\\s+");
+            if (f.length < 3) {
+                continue;
+            }
+            try {
+                Integer.parseInt(f[0]);
+            } catch (Exception e) {
+                continue;
+            }
+            try {
+                parts.add(
+                        new double[] {parseMib(f[1]), parseMib(f[2])});
+            } catch (Exception ignored) {
+            }
+        }
+        parts.sort((a, b) -> Double.compare(a[0], b[0]));
+        java.util.List<double[]> gaps = new java.util.ArrayList<>();
+        double prev = 1;
+        for (double[] p : parts) {
+            if (p[0] > prev) {
+                gaps.add(new double[] {prev, p[0]});
+            }
+            if (p[1] > prev) {
+                prev = p[1];
+            }
+        }
+        if (diskMb > prev) {
+            gaps.add(new double[] {prev, diskMb});
+        }
+        return gaps;
+    }
+
+    private static double[] largestFree(
+            String print, double diskMb, double minMb) {
+        double[] best = null;
+        for (double[] g : freeGaps(print, diskMb)) {
+            double size = g[1] - g[0];
+            if (size >= minMb && (best == null || size > (best[1] - best[0]))) {
+                best = g;
+            }
+        }
+        return best;
+    }
+
+    /** Free segment [start, end] containing pointMb, or null. */
+    private static double[] segmentWith(
+            String print, double diskMb, long pointMb) {
+        for (double[] g : freeGaps(print, diskMb)) {
+            if (pointMb >= g[0] && pointMb <= g[1]) {
+                return g;
+            }
+        }
+        return null;
+    }
+
+    /** [num, start, end] MiB for a partition node, or null. */
+    private static double[] partInfo(String print, String apart) {
+        String base = new java.io.File(apart).getName();
+        String digits = base.replaceFirst("^.*?(\\d+)$", "$1");
+        int want;
+        try {
+            want = Integer.parseInt(digits);
+        } catch (Exception e) {
+            return null;
+        }
+        for (String line : print.split("\n")) {
+            line = line.trim();
+            String[] f = line.split("\\s+");
+            if (f.length < 4) {
+                continue;
+            }
+            int num;
+            try {
+                num = Integer.parseInt(f[0]);
+            } catch (Exception e) {
+                continue;
+            }
+            if (num != want) {
+                continue;
+            }
+            try {
+                return new double[] {num, parseMib(f[1]), parseMib(f[2])};
+            } catch (Exception ignored) {
+                return null;
+            }
+        }
+        return null;
+    }
+
+    /** Free MiB on ext4 via dumpe2fs, or -1. */
+    private static long extFreeMb(String part) {
+        String o = out(new String[] {"dumpe2fs", "-h", part});
+        long free = -1;
+        long blksz = 4096;
+        for (String line : o.split("\n")) {
+            line = line.trim();
+            if (line.startsWith("Free blocks:")) {
+                try {
+                    free = Long.parseLong(line.split(":")[1].trim());
+                } catch (Exception ignored) {
+                }
+            } else if (line.startsWith("Block size:")) {
+                try {
+                    blksz = Long.parseLong(line.split(":")[1].trim());
+                } catch (Exception ignored) {
+                }
+            }
+        }
+        if (free < 0) {
+            return -1;
+        }
+        return free * blksz / 1048576;
+    }
+
+    /** Partition node that appeared vs before-set, or null. */
+    private static String newNode(java.util.Set<String> before) {
+        for (String d : partitions()) {
+            if (!before.contains(d)) {
+                return d;
+            }
+        }
+        return null;
+    }
+
     private static String findWindows() {
         java.io.File scan = new java.io.File(WORK + "scan");
         scan.mkdirs();
@@ -1169,11 +2264,38 @@ public final class Main {
     }
 
     private static int execEnv(String env, String[] argv) {
-        return execEnv(env, argv, true);
+        return execT(env, argv, true, TOOL_TIMEOUT_MIN);
     }
 
-    private static int execEnv(String env, String[] argv, boolean noisy) {
+    /**
+     * Bounded tool run. Stdin is answered ("Yes") and closed: a tool
+     * parked on a confirmation prompt proceeds (parted demands the
+     * full word Yes — same as Calamares/KPMcore feeds it) or aborts
+     * on EOF instead of deadlocking us (we read its stdout, it reads
+     * our stdin — mutual pipe wait, observed as a 50-minute ntfsresize
+     * wedge blocking the watcher loop). Hard timeout kills stragglers.
+     * Returns 124 on timeout, 127 on spawn failure.
+     */
+    private static final long TOOL_TIMEOUT_MIN = 10;
+
+    private static int execT(
+            String env, String[] argv, boolean noisy, long timeoutMin) {
         try {
+            // Calamares/KPMcore parity: parted reads confirmations from
+            // /dev/tty when it has one and ignores piped stdin, aborting
+            // headless runs (observed: resizepart "are you sure" -> EOF
+            // -> ERR shrink_part). The flag forces it onto stdin, where
+            // our "Yes" below lands. NOTE: resizepart must NOT use -s:
+            // script mode marks the shrink exception UNHANDLED by design
+            // (parted source), so no answer can ever satisfy it — proven
+            // on-device: -s+Yes fails, no--s+Yes shrinks.
+            if (argv.length > 0 && argv[0].endsWith("parted")) {
+                String[] withTty = new String[argv.length + 1];
+                withTty[0] = argv[0];
+                withTty[1] = "---pretend-input-tty";
+                System.arraycopy(argv, 1, withTty, 2, argv.length - 1);
+                argv = withTty;
+            }
             ProcessBuilder pb = new ProcessBuilder(argv);
             pb.redirectErrorStream(true);
             if (env != null) {
@@ -1182,6 +2304,11 @@ public final class Main {
                         env.substring(i + 1));
             }
             Process p = pb.start();
+            try {
+                p.getOutputStream().write("Yes\n".getBytes("UTF-8"));
+                p.getOutputStream().close();
+            } catch (Exception ignored) {
+            }
             BufferedReader r = new BufferedReader(
                     new InputStreamReader(p.getInputStream()));
             String line;
@@ -1190,13 +2317,23 @@ public final class Main {
                     logRaw(line);
                 }
             }
-            return p.waitFor();
+            if (!p.waitFor(
+                    timeoutMin, java.util.concurrent.TimeUnit.MINUTES)) {
+                p.destroyForcibly();
+                logRaw("exec timeout " + timeoutMin + "m: " + argv[0]);
+                return 124;
+            }
+            return p.exitValue();
         } catch (Exception e) {
             if (noisy) {
                 logRaw("exec failed: " + e);
             }
             return 127;
         }
+    }
+
+    private static int execEnv(String env, String[] argv, boolean noisy) {
+        return execT(env, argv, noisy, TOOL_TIMEOUT_MIN);
     }
 
     private static int execGlob(String pattern, String dest) {
@@ -1220,16 +2357,44 @@ public final class Main {
     }
 
     private static String out(String[] argv) {
+        return outRaw(argv, '\n');
+    }
+
+    private static String outLines(String[] argv) {
+        return outRaw(argv, '\n');
+    }
+
+    private static String outRaw(String[] argv, char sep) {
         try {
-            Process p = new ProcessBuilder(argv).start();
+            final Process p = new ProcessBuilder(argv).start();
+            try {
+                p.getOutputStream().close();
+            } catch (Exception ignored) {
+            }
+            // Drain stderr aside: a chatty tool must never block on a
+            // full pipe, and its text must never pollute stdout parsing
+            // (observed: merged find error became a bogus path "find:").
+            Thread drain = new Thread(() -> {
+                try {
+                    byte[] buf = new byte[8192];
+                    while (p.getErrorStream().read(buf) >= 0) {
+                    }
+                } catch (Exception ignored) {
+                }
+            });
+            drain.start();
             BufferedReader r = new BufferedReader(
                     new InputStreamReader(p.getInputStream()));
             StringBuilder sb = new StringBuilder();
             String line;
             while ((line = r.readLine()) != null) {
-                sb.append(line).append(' ');
+                sb.append(line).append(sep);
             }
-            p.waitFor();
+            if (!p.waitFor(2, java.util.concurrent.TimeUnit.MINUTES)) {
+                p.destroyForcibly();
+                return "";
+            }
+            drain.join(5000);
             return sb.toString();
         } catch (Exception e) {
             return "";
@@ -1305,6 +2470,37 @@ public final class Main {
             if (sDbg != null) {
                 sDbg.close();
             }
+        } catch (Exception ignored) {
+        }
+        // Release our own mounts (lazy: never hang the exit path).
+        // The live system runs from its own loop mounts, not these.
+        for (String m : new String[] {"mnt", "scan", "isomnt", "paymnt"}) {
+            try {
+                new ProcessBuilder(
+                        new String[] {"umount", "-l", WORK + m}).start()
+                        .waitFor(30, java.util.concurrent.TimeUnit.SECONDS);
+            } catch (Exception ignored) {
+            }
+        }
+        fixOwnership();
+    }
+
+    /**
+     * Hand the job files back to the app. The engine runs as root and
+     * recreates them root-owned, which then blocks the app from
+     * resubmitting (it cannot truncate root-owned files). Best effort.
+     * The job file itself is never touched (it may hold the next job).
+     */
+    private static void fixOwnership() {
+        try {
+            String id =
+                    out(new String[] {"stat", "-c", "%u:%g", BASE}).trim()
+                            .split(" ")[0];
+            if (!id.matches("[0-9]+:[0-9]+")) {
+                return;
+            }
+            execQuiet(new String[] {"chown", id, BASE + "installer.status",
+                    BASE + "installer.log", BASE + "installer-debug.log"});
         } catch (Exception ignored) {
         }
     }

@@ -43,6 +43,21 @@ public class ProgressActivity extends Activity {
                 getIntent().getIntExtra(ModeActivity.EXTRA_DATA_SIZE, 0);
         opts.extra =
                 getIntent().getStringExtra(ModeActivity.EXTRA_OPTS);
+        opts.apart = getIntent().getStringExtra("apart");
+        opts.asizeMb = getIntent().getIntExtra(ModeActivity.EXTRA_ASIZE, 0);
+        opts.afreeMb = getIntent().getLongExtra("afree", 0);
+        java.util.ArrayList<String> oses =
+                getIntent().getStringArrayListExtra(ScanActivity.EXTRA_OS);
+        if (oses != null) {
+            StringBuilder sb = new StringBuilder();
+            for (String o : oses) {
+                if (sb.length() > 0) {
+                    sb.append(";;");
+                }
+                sb.append(o.replace(";;", ",,").replace("\n", " "));
+            }
+            opts.osList = sb.toString();
+        }
 
         new Thread(
                         () ->

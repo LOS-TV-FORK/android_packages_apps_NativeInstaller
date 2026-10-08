@@ -89,6 +89,41 @@ public final class Shell {
         }
     }
 
+    /**
+     * Delete-then-write into our own files dir: stale files left behind
+     * by the root engine (root-owned, app cannot truncate them) are
+     * removed first — our dir is app-owned, so deletion is allowed —
+     * and recreated with app ownership. Returns null on success,
+     * otherwise a short technical reason (raw path/errno/free space,
+     * deliberately not localized: same as raw tool output lines).
+     */
+    public static String writeFresh(String path, String content) {
+        java.io.File f = new java.io.File(path);
+        boolean existed = f.exists();
+        boolean wasWritable = f.canWrite();
+        long oldLen = existed ? f.length() : -1;
+        if (existed && !f.delete()) {
+            return "del_fail " + path + " free=" + freeOf(path);
+        }
+        try (FileOutputStream out = new FileOutputStream(path)) {
+            out.write(content.getBytes(StandardCharsets.UTF_8));
+            return null;
+        } catch (Exception e) {
+            return "write_fail " + path + " existed=" + existed
+                    + " wasWritable=" + wasWritable + " oldLen=" + oldLen
+                    + " free=" + freeOf(path) + " err=" + e;
+        }
+    }
+
+    private static long freeOf(String path) {
+        try {
+            java.io.File parent = new java.io.File(path).getParentFile();
+            return parent != null ? parent.getFreeSpace() : -1;
+        } catch (Exception e) {
+            return -1;
+        }
+    }
+
     public static String readFile(String path) {
         try (FileInputStream f = new FileInputStream(path)) {
             byte[] buf = new byte[65536];

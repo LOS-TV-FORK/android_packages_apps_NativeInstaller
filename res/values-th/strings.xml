@@ -65,4 +65,21 @@
     <string name="options_btn">ตัวเลือก</string>
     <string name="options_title">ตัวเลือก</string>
     <string name="inst_err_same_disk">เป้าหมายคือสื่อติดตั้งนั่นเอง</string>
+    <string name="mode_alongside">ติดตั้งคู่ขนาน (ย่อ, เก็บระบบอื่น)</string>
+    <string name="part_alongside_warn">ระบบอื่นคงอยู่ เลือกพาร์ติชันที่จะย่อ (ext4/fat/ntfs) หรือพื้นที่ว่าง</string>
+    <string name="part_free_space">พื้นที่ว่าง (ไม่ย่อ)</string>
+    <string name="part_scanning">กำลังสแกนดิสก์…</string>
+    <string name="scan_title">ระบบบน %1$s</string>
+    <string name="scan_none">ไม่มีระบบอื่น</string>
+    <string name="scan_none_sub">ดิสก์ว่าง: ล้างหรือใช้พาร์ติชัน</string>
+    <string name="scan_found_sub">พบ %1$d ระบบ เลือกคู่ขนานแล้ว</string>
+    <string name="part_scan_empty">ว่าง: เอนจินไม่ตอบ ดู log</string>
+    <string name="part_scan_found">แผนที่: %1$d พาร์ติชัน, ว่าง %2$d</string>
+    <string name="inst_err_shrink_unsupported">FS นี้ย่อไม่ได้</string>
+    <string name="inst_err_shrink_fsck">ตรวจ FS ก่อนย่อไม่ผ่าน</string>
+    <string name="inst_err_shrink_fs">ย่อ FS ไม่สำเร็จ</string>
+    <string name="inst_err_shrink_part">ย่อพาร์ติชันไม่สำเร็จ</string>
+    <string name="inst_err_no_space">พื้นที่ไม่พอ</string>
+    <string name="inst_err_too_small">ขนาดเล็กไป (ต้อง %1$s)</string>
+    <string name="inst_err_part_parse">อ่านตารางพาร์ติชันไม่ได้</string>
 </resources>

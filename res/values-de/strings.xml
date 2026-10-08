@@ -65,4 +65,21 @@
     <string name="options_btn">Optionen</string>
     <string name="options_title">Optionen</string>
     <string name="inst_err_same_disk">Ziel ist das Installationsmedium.</string>
+    <string name="mode_alongside">Daneben (verkleinern, Systeme behalten)</string>
+    <string name="part_alongside_warn">Andere Systeme bleiben. Wähle Partition zum Verkleinern (ext4/fat/ntfs) oder freien Platz.</string>
+    <string name="part_free_space">Freier Platz (ohne Verkleinern)</string>
+    <string name="part_scanning">Scanne Platte…</string>
+    <string name="scan_title">Systeme auf %1$s</string>
+    <string name="scan_none">Keine anderen Systeme</string>
+    <string name="scan_none_sub">Platte leer: löschen oder Partition nutzen.</string>
+    <string name="scan_found_sub">%1$d System(e) gefunden. Daneben vorausgewählt.</string>
+    <string name="part_scan_empty">Scan leer: Engine antwortet nicht. Log prüfen.</string>
+    <string name="part_scan_found">Plattenkarte: %1$d Partition(en), %2$d Freibereiche.</string>
+    <string name="inst_err_shrink_unsupported">Dieses FS nicht verkleinerbar.</string>
+    <string name="inst_err_shrink_fsck">FS-Prüfung vor Verkleinern fehlgeschlagen.</string>
+    <string name="inst_err_shrink_fs">FS-Verkleinerung fehlgeschlagen.</string>
+    <string name="inst_err_shrink_part">Partition konnte nicht verkleinert werden.</string>
+    <string name="inst_err_no_space">Zu wenig Platz.</string>
+    <string name="inst_err_too_small">Größe zu klein (nötig %1$s).</string>
+    <string name="inst_err_part_parse">Partitionstabelle nicht lesbar.</string>
 </resources>

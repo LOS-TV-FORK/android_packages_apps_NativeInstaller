@@ -47,7 +47,7 @@ public class DiskActivity extends Activity {
                     if (pos < 0 || pos >= mDisks.size()) {
                         return;
                     }
-                    Intent i = new Intent(this, ModeActivity.class);
+                    Intent i = new Intent(this, ScanActivity.class);
                     i.putExtra(EXTRA_DISK, mDisks.get(pos).dev);
                     startActivity(i);
                 });

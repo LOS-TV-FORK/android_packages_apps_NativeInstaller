@@ -10,10 +10,57 @@ public final class Engine {
 
     public static final class Options {
         public String disk = "";
-        public String mode = "disk"; // "disk" (wipe) or "part" (format existing)
+        public String mode = "disk"; // "disk" (wipe), "part" or "alongside"
         public boolean dataImg;
         public int dataSizeMb; // 0 = max
         public String extra = "";
+        public String apart = ""; // shrink target, alongside only
+        public int asizeMb; // system MB, alongside only, 0 = max
+        public long afreeMb; // pin free segment containing this MB
+        public String osList = ""; // type|label|loader|part records, ;; separated
+    }
+
+    /**
+     * Read-only scan (task=scan): submits the job, collects raw protocol
+     * lines until done/error. The watcher engine does the privileged
+     * part; the UI only renders.
+     */
+    public static java.util.List<String> scan(android.content.Context ctx) {
+        String dir = ctx.getFilesDir().getAbsolutePath();
+        Shell.writeFresh(dir + "/installer.job", "task=scan\n");
+        Shell.writeFresh(dir + "/installer.status", "idle\n");
+        Shell.writeFresh(dir + "/installer.log", "");
+        java.util.List<String> lines = new java.util.ArrayList<>();
+        String last = "";
+        for (int i = 0; i < 180; i++) {
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
+                return lines;
+            }
+            String status = Shell.readFile(dir + "/installer.status");
+            String full = Shell.readFile(dir + "/installer.log");
+            if (status == null) {
+                continue;
+            }
+            if (full == null) {
+                full = "";
+            }
+            if (full.length() > last.length() && full.startsWith(last)) {
+                for (String line : full.substring(last.length()).split("\n")) {
+                    if (!line.isEmpty()) {
+                        lines.add(line);
+                    }
+                }
+                last = full;
+            } else if (!full.equals(last)) {
+                last = full;
+            }
+            if ("done".equals(status.trim()) || "error".equals(status.trim())) {
+                return lines;
+            }
+        }
+        return lines;
     }
 
     public interface Log {
@@ -37,21 +84,34 @@ public final class Engine {
         String statusPath = dir + "/installer.status";
         String logPath = dir + "/installer.log";
         // Submit the job for the init engine service.
-        // /data/local/tmp is world-writable: plain file writes, no su.
+        // Plain file writes into our own files dir, no su.
         StringBuilder job = new StringBuilder();
         job.append("disk=").append(o.disk).append("\n");
         job.append("mode=").append(o.mode).append("\n");
+        job.append("apart=").append(o.apart == null ? "" : o.apart).append("\n");
+        job.append("asize=").append(o.asizeMb).append("\n");
+        job.append("afree=").append(o.afreeMb).append("\n");
+        job.append("oslist=").append(o.osList == null ? "" : o.osList).append("\n");
         job.append("data_img=").append(o.dataImg ? "1" : "0").append("\n");
         job.append("data_size=").append(o.dataSizeMb).append("\n");
         if (o.extra != null && !o.extra.isEmpty()) {
             job.append("extra=").append(o.extra).append("\n");
         }
         
-        if (!Shell.writeFile(jobPath, job.toString())
-                || !Shell.writeFile(statusPath, "idle\n")
-                || !Shell.writeFile(logPath, "")
-                || !Shell.writeFile(dir + "/installer-debug.log", "")) {
+        String dbgPath = dir + "/installer-debug.log";
+        String submitErr = Shell.writeFresh(jobPath, job.toString());
+        if (submitErr == null) {
+            submitErr = Shell.writeFresh(statusPath, "idle\n");
+        }
+        if (submitErr == null) {
+            submitErr = Shell.writeFresh(logPath, "");
+        }
+        if (submitErr == null) {
+            submitErr = Shell.writeFresh(dbgPath, "");
+        }
+        if (submitErr != null) {
             log.line(res.get(R.string.err_job_write));
+            log.line(submitErr);
             return;
         }
         log.line(res.get(R.string.job_sent));
@@ -201,6 +261,20 @@ public final class Engine {
                 return R.string.inst_err_mkfs;
             case "mount":
                 return R.string.inst_err_mount;
+            case "shrink_unsupported":
+                return R.string.inst_err_shrink_unsupported;
+            case "shrink_fsck":
+                return R.string.inst_err_shrink_fsck;
+            case "shrink_fs":
+                return R.string.inst_err_shrink_fs;
+            case "shrink_part":
+                return R.string.inst_err_shrink_part;
+            case "no_space":
+                return R.string.inst_err_no_space;
+            case "too_small":
+                return R.string.inst_err_too_small;
+            case "part_parse":
+                return R.string.inst_err_part_parse;
             case "copy_system":
                 return R.string.inst_err_copy_system;
             case "extend_system":
@@ -219,6 +293,12 @@ public final class Engine {
                 return R.string.inst_err_mkfs_data;
             case "mount_esp":
                 return R.string.inst_err_mount_esp;
+            case "no_esp":
+                return R.string.inst_err_no_esp;
+            case "efi_create":
+                return R.string.inst_err_efi_create;
+            case "efi_order":
+                return R.string.inst_err_efi_order;
             case "efi_bin":
                 return R.string.inst_err_efi_bin;
             case "efi_mods":

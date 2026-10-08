@@ -33,6 +33,9 @@
             android:name=".PartitionActivity"
             android:exported="false" />
         <activity
+            android:name=".ScanActivity"
+            android:exported="false" />
+        <activity
             android:name=".OptionsGroupActivity"
             android:exported="false" />
         <activity

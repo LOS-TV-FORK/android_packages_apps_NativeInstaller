@@ -65,4 +65,21 @@
     <string name="options_btn">Opsi</string>
     <string name="options_title">Opsi</string>
     <string name="inst_err_same_disk">Target adalah media instalasi itu sendiri.</string>
+    <string name="mode_alongside">Berdampingan (kecilkan, pertahankan sistem)</string>
+    <string name="part_alongside_warn">Sistem lain dipertahankan. Pilih partisi untuk dikecilkan (ext4/fat/ntfs) atau ruang kosong.</string>
+    <string name="part_free_space">Ruang kosong (tanpa mengecilkan)</string>
+    <string name="part_scanning">Memindai disk…</string>
+    <string name="scan_title">Sistem pada %1$s</string>
+    <string name="scan_none">Tak ada sistem lain</string>
+    <string name="scan_none_sub">Disk kosong: hapus atau pakai partisi.</string>
+    <string name="scan_found_sub">%1$d sistem. Berdampingan dipilih.</string>
+    <string name="part_scan_empty">Kosong: mesin tak menjawab. Cek log.</string>
+    <string name="part_scan_found">Peta: %1$d partisi, %2$d ruang kosong.</string>
+    <string name="inst_err_shrink_unsupported">FS ini tak bisa dikecilkan.</string>
+    <string name="inst_err_shrink_fsck">Cek FS sebelum mengecilkan gagal.</string>
+    <string name="inst_err_shrink_fs">Gagal mengecilkan FS.</string>
+    <string name="inst_err_shrink_part">Gagal mengecilkan partisi.</string>
+    <string name="inst_err_no_space">Ruang kurang.</string>
+    <string name="inst_err_too_small">Ukuran terlalu kecil (butuh %1$s).</string>
+    <string name="inst_err_part_parse">Tabel partisi tak terbaca.</string>
 </resources>

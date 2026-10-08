@@ -65,4 +65,21 @@
     <string name="options_btn">گزینه‌ها</string>
     <string name="options_title">گزینه‌ها</string>
     <string name="inst_err_same_disk">هدف خود رسانه نصب است.</string>
+    <string name="mode_alongside">کنار (کوچک‌سازی، حفظ سیستم‌ها)</string>
+    <string name="part_alongside_warn">سیستم‌های دیگر حفظ می‌شوند. پارتیشن برای کوچک‌سازی (ext4/fat/ntfs) یا فضای آزاد را انتخاب کنید.</string>
+    <string name="part_free_space">فضای آزاد (بدون کوچک‌سازی)</string>
+    <string name="part_scanning">در حال بررسی دیسک…</string>
+    <string name="scan_title">سیستم‌های روی %1$s</string>
+    <string name="scan_none">سیستم دیگری نیست</string>
+    <string name="scan_none_sub">دیسک خالی است: پاک کن یا از پارتیشن استفاده کن.</string>
+    <string name="scan_found_sub">%1$d سیستم یافت شد. «کنار» انتخاب شد.</string>
+    <string name="part_scan_empty">اسکن خالی: موتور جواب نداد. لاگ را ببین.</string>
+    <string name="part_scan_found">نقشه دیسک: %1$d پارتیشن، %2$d جای خالی.</string>
+    <string name="inst_err_shrink_unsupported">این فایل‌سیستم کوچک نمی‌شود.</string>
+    <string name="inst_err_shrink_fsck">بررسی فایل‌سیستم پیش از کوچک‌سازی ناموفق بود.</string>
+    <string name="inst_err_shrink_fs">کوچک‌سازی فایل‌سیستم ناموفق بود.</string>
+    <string name="inst_err_shrink_part">کوچک‌سازی پارتیشن ناموفق بود.</string>
+    <string name="inst_err_no_space">فضای کافی نیست.</string>
+    <string name="inst_err_too_small">اندازه کوچک است (لازم %1$s).</string>
+    <string name="inst_err_part_parse">جدول پارتیشن خوانده نشد.</string>
 </resources>

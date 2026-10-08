@@ -65,4 +65,21 @@
     <string name="options_btn">آپشنز</string>
     <string name="options_title">آپشنز</string>
     <string name="inst_err_same_disk">ہدف انسٹال میڈیا ہی ہے۔</string>
+    <string name="mode_alongside">ساتھ (سکیڑیں، سسٹم رکھیں)</string>
+    <string name="part_alongside_warn">دیگر سسٹم رہیں گے۔ سکیڑنے کے لیے پارٹیشن (ext4/fat/ntfs) یا خالی جگہ چنیں۔</string>
+    <string name="part_free_space">خالی جگہ (بغیر سکیڑے)</string>
+    <string name="part_scanning">ڈسک اسکین ہو رہی…</string>
+    <string name="scan_title">%1$s پر سسٹم</string>
+    <string name="scan_none">کوئی اور سسٹم نہیں</string>
+    <string name="scan_none_sub">خالی ڈسک: مٹاؤ یا پارٹیشن استعمال کرو۔</string>
+    <string name="scan_found_sub">%1$d ملے۔ ساتھ چنا گیا۔</string>
+    <string name="part_scan_empty">خالی: انجن نے جواب نہ دیا۔ لاگ دیکھو۔</string>
+    <string name="part_scan_found">نقشہ: %1$d پارٹیشن، %2$d خالی۔</string>
+    <string name="inst_err_shrink_unsupported">یہ FS نہیں سکڑ سکتا۔</string>
+    <string name="inst_err_shrink_fsck">سکیڑنے سے پہلے FS جانچ ناکام۔</string>
+    <string name="inst_err_shrink_fs">FS سکیڑنا ناکام۔</string>
+    <string name="inst_err_shrink_part">پارٹیشن سکیڑنا ناکام۔</string>
+    <string name="inst_err_no_space">جگہ کم۔</string>
+    <string name="inst_err_too_small">سائز چھوٹا (چاہیے %1$s)۔</string>
+    <string name="inst_err_part_parse">پارٹیشن ٹیبل پڑھی نہ گئی۔</string>
 </resources>

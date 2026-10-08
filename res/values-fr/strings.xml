@@ -65,4 +65,21 @@
     <string name="options_btn">Options</string>
     <string name="options_title">Options</string>
     <string name="inst_err_same_disk">La cible est le support lui-même.</string>
+    <string name="mode_alongside">À côté (réduire, garder les systèmes)</string>
+    <string name="part_alongside_warn">Les autres systèmes sont gardés. Choisis une partition à réduire (ext4/fat/ntfs) ou l’espace libre.</string>
+    <string name="part_free_space">Espace libre (sans réduire)</string>
+    <string name="part_scanning">Analyse du disque…</string>
+    <string name="scan_title">Systèmes sur %1$s</string>
+    <string name="scan_none">Aucun autre système</string>
+    <string name="scan_none_sub">Disque vide : efface-le ou utilise une partition.</string>
+    <string name="scan_found_sub">%1$d système(s). À côté présélectionné.</string>
+    <string name="part_scan_empty">Vide : le moteur n’a pas répondu. Voir le journal.</string>
+    <string name="part_scan_found">Carte : %1$d partition(s), %2$d zone(s) libre(s).</string>
+    <string name="inst_err_shrink_unsupported">Ce FS n’est pas réductible.</string>
+    <string name="inst_err_shrink_fsck">Échec du contrôle FS avant réduction.</string>
+    <string name="inst_err_shrink_fs">Échec de réduction FS.</string>
+    <string name="inst_err_shrink_part">Échec de réduction de partition.</string>
+    <string name="inst_err_no_space">Pas assez de place.</string>
+    <string name="inst_err_too_small">Taille trop petite (requis %1$s).</string>
+    <string name="inst_err_part_parse">Table de partitions illisible.</string>
 </resources>

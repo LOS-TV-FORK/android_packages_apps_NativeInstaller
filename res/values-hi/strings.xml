@@ -65,4 +65,21 @@
     <string name="options_btn">विकल्प</string>
     <string name="options_title">विकल्प</string>
     <string name="inst_err_same_disk">लक्ष्य इंस्टॉल मीडिया ही है।</string>
+    <string name="mode_alongside">साथ में (सिकोड़ें, सिस्टम रखें)</string>
+    <string name="part_alongside_warn">अन्य सिस्टम रहेंगे। सिकोड़ने के लिए पार्टीशन (ext4/fat/ntfs) या खाली जगह चुनें।</string>
+    <string name="part_free_space">खाली जगह (बिना सिकोड़े)</string>
+    <string name="part_scanning">डिस्क स्कैन हो रही…</string>
+    <string name="scan_title">%1$s पर सिस्टम</string>
+    <string name="scan_none">कोई अन्य सिस्टम नहीं</string>
+    <string name="scan_none_sub">डिस्क खाली है: मिटाओ या पार्टीशन चुनो।</string>
+    <string name="scan_found_sub">%1$d सिस्टम। साथ वाला चुना।</string>
+    <string name="part_scan_empty">खाली: इंजन ने जवाब नहीं दिया। लॉग देखो।</string>
+    <string name="part_scan_found">नक्शा: %1$d पार्टीशन, %2$d खाली।</string>
+    <string name="inst_err_shrink_unsupported">यह FS नहीं सिकुड़ सकता।</string>
+    <string name="inst_err_shrink_fsck">सिकोड़ने से पहले FS जांच विफल।</string>
+    <string name="inst_err_shrink_fs">FS सिकोड़ना विफल।</string>
+    <string name="inst_err_shrink_part">पार्टीशन सिकोड़ना विफल।</string>
+    <string name="inst_err_no_space">जगह कम।</string>
+    <string name="inst_err_too_small">आकार छोटा (चाहिए %1$s)।</string>
+    <string name="inst_err_part_parse">पार्टीशन तालिका पढ़ी नहीं गई।</string>
 </resources>

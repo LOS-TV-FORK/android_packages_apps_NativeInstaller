@@ -65,4 +65,21 @@
     <string name="options_btn">选项</string>
     <string name="options_title">选项</string>
     <string name="inst_err_same_disk">目标就是安装介质本身。</string>
+    <string name="mode_alongside">并存（压缩，保留其他系统）</string>
+    <string name="part_alongside_warn">其他系统将被保留。选择要压缩的分区（ext4/fat/ntfs）或空闲空间。</string>
+    <string name="part_free_space">空闲空间（不压缩）</string>
+    <string name="part_scanning">正在扫描磁盘…</string>
+    <string name="scan_title">%1$s 上的系统</string>
+    <string name="scan_none">没有其他系统</string>
+    <string name="scan_none_sub">空磁盘：擦除或使用分区。</string>
+    <string name="scan_found_sub">找到 %1$d 个。已选并存。</string>
+    <string name="part_scan_empty">为空：引擎无响应。查看日志。</string>
+    <string name="part_scan_found">映射：%1$d 分区，%2$d 空闲。</string>
+    <string name="inst_err_shrink_unsupported">此文件系统无法压缩。</string>
+    <string name="inst_err_shrink_fsck">压缩前文件系统检查失败。</string>
+    <string name="inst_err_shrink_fs">压缩文件系统失败。</string>
+    <string name="inst_err_shrink_part">压缩分区失败。</string>
+    <string name="inst_err_no_space">空间不足。</string>
+    <string name="inst_err_too_small">大小太小（需要 %1$s）。</string>
+    <string name="inst_err_part_parse">分区表不可读。</string>
 </resources>

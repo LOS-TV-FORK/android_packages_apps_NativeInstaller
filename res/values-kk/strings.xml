@@ -65,4 +65,21 @@
     <string name="options_btn">Параметрлер</string>
     <string name="options_title">Параметрлер</string>
     <string name="inst_err_same_disk">Мақсат тасымалдаушының өзі.</string>
+    <string name="mode_alongside">Қатар (сығу, жүйелерді сақтау)</string>
+    <string name="part_alongside_warn">Басқа жүйелер сақталады. Сығу үшін бөлімді (ext4/fat/ntfs) немесе бос орынды таңда.</string>
+    <string name="part_free_space">Бос орын (сығусыз)</string>
+    <string name="part_scanning">Диск сканерленуде…</string>
+    <string name="scan_title">%1$s жүйелері</string>
+    <string name="scan_none">Басқа жүйе жоқ</string>
+    <string name="scan_none_sub">Диск бос: тазала немесе бөлімді қолдан.</string>
+    <string name="scan_found_sub">%1$d жүйе. «Қатар» таңдалды.</string>
+    <string name="part_scan_empty">Бос: қозғалтқыш жауап бермеді. Логты қара.</string>
+    <string name="part_scan_found">Карта: %1$d бөлім, %2$d бос орын.</string>
+    <string name="inst_err_shrink_unsupported">Бұл ФЖ сығылмайды.</string>
+    <string name="inst_err_shrink_fsck">Сығу алдындағы ФЖ тексеру сәтсіз.</string>
+    <string name="inst_err_shrink_fs">ФЖ сығу сәтсіз.</string>
+    <string name="inst_err_shrink_part">Бөлімді сығу сәтсіз.</string>
+    <string name="inst_err_no_space">Орын аз.</string>
+    <string name="inst_err_too_small">Өлшем кіші (керек %1$s).</string>
+    <string name="inst_err_part_parse">Бөлім кестесі оқылмады.</string>
 </resources>

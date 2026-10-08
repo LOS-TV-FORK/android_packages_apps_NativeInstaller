@@ -65,4 +65,21 @@
     <string name="options_btn">Možnosti</string>
     <string name="options_title">Možnosti</string>
     <string name="inst_err_same_disk">Cíl je samotné médium.</string>
+    <string name="mode_alongside">Vedle (zmenšit, zachovat systémy)</string>
+    <string name="part_alongside_warn">Ostatní systémy se zachovají. Vyber oddíl ke zmenšení (ext4/fat/ntfs) nebo volné místo.</string>
+    <string name="part_free_space">Volné místo (bez zmenšení)</string>
+    <string name="part_scanning">Skenuji disk…</string>
+    <string name="scan_title">Systémy na %1$s</string>
+    <string name="scan_none">Žádné další systémy</string>
+    <string name="scan_none_sub">Disk je prázdný: smaž ho nebo použij oddíl.</string>
+    <string name="scan_found_sub">Nalezeno systémů: %1$d. Předvybráno vedle.</string>
+    <string name="part_scan_empty">Sken je prázdný: engine neodpověděl. Zkontroluj log.</string>
+    <string name="part_scan_found">Mapa disku: oddílů %1$d, volných míst %2$d.</string>
+    <string name="inst_err_shrink_unsupported">Tento FS zmenšit nelze.</string>
+    <string name="inst_err_shrink_fsck">Kontrola FS před zmenšením selhala.</string>
+    <string name="inst_err_shrink_fs">Zmenšení FS se nezdařilo.</string>
+    <string name="inst_err_shrink_part">Zmenšení oddílu se nezdařilo.</string>
+    <string name="inst_err_no_space">Málo místa.</string>
+    <string name="inst_err_too_small">Velikost je malá (třeba %1$s).</string>
+    <string name="inst_err_part_parse">Nelze číst tabulku oddílů.</string>
 </resources>

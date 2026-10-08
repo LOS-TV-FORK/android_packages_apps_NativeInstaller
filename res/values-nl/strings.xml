@@ -65,4 +65,21 @@
     <string name="options_btn">Opties</string>
     <string name="options_title">Opties</string>
     <string name="inst_err_same_disk">Doel is het installatiemedium zelf.</string>
+    <string name="mode_alongside">Ernaast (verkleinen, systemen behouden)</string>
+    <string name="part_alongside_warn">Andere systemen blijven. Kies partitie om te verkleinen (ext4/fat/ntfs) of vrije ruimte.</string>
+    <string name="part_free_space">Vrije ruimte (zonder verkleinen)</string>
+    <string name="part_scanning">Schijf scannen…</string>
+    <string name="scan_title">Systemen op %1$s</string>
+    <string name="scan_none">Geen andere systemen</string>
+    <string name="scan_none_sub">Lege schijf: wissen of partitie gebruiken.</string>
+    <string name="scan_found_sub">%1$d gevonden. Ernaast gekozen.</string>
+    <string name="part_scan_empty">Leeg: engine reageert niet. Check log.</string>
+    <string name="part_scan_found">Kaart: %1$d partitie(s), %2$d vrij.</string>
+    <string name="inst_err_shrink_unsupported">Dit FS niet verkleinbaar.</string>
+    <string name="inst_err_shrink_fsck">FS-controle vóór verkleinen mislukt.</string>
+    <string name="inst_err_shrink_fs">FS verkleinen mislukt.</string>
+    <string name="inst_err_shrink_part">Partitie verkleinen mislukt.</string>
+    <string name="inst_err_no_space">Te weinig ruimte.</string>
+    <string name="inst_err_too_small">Grootte te klein (nodig %1$s).</string>
+    <string name="inst_err_part_parse">Partitietabel onleesbaar.</string>
 </resources>

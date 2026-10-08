@@ -65,4 +65,21 @@
     <string name="options_btn">Opciones</string>
     <string name="options_title">Opciones</string>
     <string name="inst_err_same_disk">El destino es el propio medio.</string>
+    <string name="mode_alongside">Junto (reducir, conservar sistemas)</string>
+    <string name="part_alongside_warn">Los demás sistemas se conservan. Elige partición para reducir (ext4/fat/ntfs) o espacio libre.</string>
+    <string name="part_free_space">Espacio libre (sin reducir)</string>
+    <string name="part_scanning">Analizando disco…</string>
+    <string name="scan_title">Sistemas en %1$s</string>
+    <string name="scan_none">No hay otros sistemas</string>
+    <string name="scan_none_sub">Disco vacío: bórralo o usa una partición.</string>
+    <string name="scan_found_sub">%1$d sistema(s). Junto preseleccionado.</string>
+    <string name="part_scan_empty">Vacío: el motor no respondió. Revisa el registro.</string>
+    <string name="part_scan_found">Mapa: %1$d particion(es), %2$d huecos.</string>
+    <string name="inst_err_shrink_unsupported">Este FS no se puede reducir.</string>
+    <string name="inst_err_shrink_fsck">Falló comprobar FS antes de reducir.</string>
+    <string name="inst_err_shrink_fs">Falló reducir FS.</string>
+    <string name="inst_err_shrink_part">Falló reducir partición.</string>
+    <string name="inst_err_no_space">Poco espacio.</string>
+    <string name="inst_err_too_small">Tamaño pequeño (necesita %1$s).</string>
+    <string name="inst_err_part_parse">No se lee la tabla de particiones.</string>
 </resources>

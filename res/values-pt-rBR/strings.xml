@@ -65,4 +65,21 @@
     <string name="options_btn">Opções</string>
     <string name="options_title">Opções</string>
     <string name="inst_err_same_disk">O destino é a própria mídia.</string>
+    <string name="mode_alongside">Ao lado (reduzir, manter sistemas)</string>
+    <string name="part_alongside_warn">Os outros sistemas ficam. Escolha partição para reduzir (ext4/fat/ntfs) ou espaço livre.</string>
+    <string name="part_free_space">Espaço livre (sem reduzir)</string>
+    <string name="part_scanning">Verificando disco…</string>
+    <string name="scan_title">Sistemas em %1$s</string>
+    <string name="scan_none">Nenhum outro sistema</string>
+    <string name="scan_none_sub">Disco vazio: apague ou use partição.</string>
+    <string name="scan_found_sub">%1$d encontrado(s). Ao lado escolhido.</string>
+    <string name="part_scan_empty">Vazio: o motor não respondeu. Veja o log.</string>
+    <string name="part_scan_found">Mapa: %1$d partição(ões), %2$d livre(s).</string>
+    <string name="inst_err_shrink_unsupported">Este FS não reduz.</string>
+    <string name="inst_err_shrink_fsck">Checagem do FS antes de reduzir falhou.</string>
+    <string name="inst_err_shrink_fs">Falha ao reduzir FS.</string>
+    <string name="inst_err_shrink_part">Falha ao reduzir partição.</string>
+    <string name="inst_err_no_space">Pouco espaço.</string>
+    <string name="inst_err_too_small">Tamanho pequeno (precisa %1$s).</string>
+    <string name="inst_err_part_parse">Tabela de partições ilegível.</string>
 </resources>

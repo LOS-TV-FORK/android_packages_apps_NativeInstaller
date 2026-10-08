@@ -65,4 +65,21 @@
     <string name="options_btn">オプション</string>
     <string name="options_title">オプション</string>
     <string name="inst_err_same_disk">ターゲットがインストールメディア自体です。</string>
+    <string name="mode_alongside">共存（縮小、他システム保持）</string>
+    <string name="part_alongside_warn">他のシステムは保持されます。縮小するパーティション（ext4/fat/ntfs）か空き領域を選択。</string>
+    <string name="part_free_space">空き領域（縮小なし）</string>
+    <string name="part_scanning">ディスクをスキャン中…</string>
+    <string name="scan_title">%1$s 上のシステム</string>
+    <string name="scan_none">他のシステムなし</string>
+    <string name="scan_none_sub">空ディスク：消去かパーティション使用。</string>
+    <string name="scan_found_sub">%1$d 件検出。共存を選択済み。</string>
+    <string name="part_scan_empty">空：エンジン無応答。ログ確認。</string>
+    <string name="part_scan_found">マップ：%1$d パーティション、空き %2$d。</string>
+    <string name="inst_err_shrink_unsupported">このFSは縮小不可。</string>
+    <string name="inst_err_shrink_fsck">縮小前のFSチェック失敗。</string>
+    <string name="inst_err_shrink_fs">FSの縮小に失敗。</string>
+    <string name="inst_err_shrink_part">パーティションの縮小に失敗。</string>
+    <string name="inst_err_no_space">空き不足。</string>
+    <string name="inst_err_too_small">サイズが小さい（%1$s が必要）。</string>
+    <string name="inst_err_part_parse">パーティションテーブルを読めない。</string>
 </resources>

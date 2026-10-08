@@ -15,6 +15,7 @@
     <string name="mode_title">Режим: %1$s</string>
     <string name="mode_wipe">Весь диск (стереть всё)</string>
     <string name="mode_part">Существующий раздел (формат)</string>
+    <string name="mode_alongside">Рядом (ужать, сохранить системы)</string>
     <string name="opt_dataimg">data.img вместо каталога data</string>
     <string name="opt_datasize_hint">Размер data.img, МБ (0 = максимум)</string>
     <string name="opt_nomodeset">nomodeset в cmdline</string>
@@ -23,6 +24,15 @@
     <!-- Раздел -->
     <string name="part_title">Выбор раздела: %1$s</string>
     <string name="part_warn">Раздел будет отформатирован!</string>
+    <string name="part_alongside_warn">Другие системы сохраняются. Выбери раздел для ужатия (ext4/fat/ntfs) или свободное место.</string>
+    <string name="part_free_space">Свободное место (без ужатия)</string>
+    <string name="part_scanning">Сканирую диск…</string>
+    <string name="part_scan_empty">Скан пуст: движок не ответил. Смотри лог установщика.</string>
+    <string name="part_scan_found">Карта диска: разделов %1$d, свободных мест %2$d.</string>
+    <string name="scan_title">Системы на %1$s</string>
+    <string name="scan_none">Других систем нет</string>
+    <string name="scan_none_sub">Диск пустой: стирай или используй раздел.</string>
+    <string name="scan_found_sub">Найдено систем: %1$d. Режим «рядом» выбран.</string>
     <!-- Прогресс -->
     <string name="progress_title">Установка…</string>
     <!-- Движок -->
@@ -54,6 +64,13 @@
     <string name="inst_err_system_part">Не удалось создать раздел system.</string>
     <string name="inst_err_mkfs_esp">Не удалось отформатировать ESP.</string>
     <string name="inst_err_mkfs">Ошибка создания ФС.</string>
+    <string name="inst_err_shrink_unsupported">Этот ФС ужать нельзя.</string>
+    <string name="inst_err_shrink_fsck">Проверка ФС перед ужатием не прошла.</string>
+    <string name="inst_err_shrink_fs">Не вышло ужать ФС.</string>
+    <string name="inst_err_shrink_part">Не вышло ужать раздел.</string>
+    <string name="inst_err_no_space">Мало места.</string>
+    <string name="inst_err_too_small">Размер мал (надо %1$s).</string>
+    <string name="inst_err_part_parse">Не читается таблица разделов.</string>
     <string name="inst_err_mount">Ошибка монтирования.</string>
     <string name="inst_err_copy_system">Ошибка копирования system (%1$s).</string>
     <string name="inst_err_extend_system">Ошибка расширения system (%1$s).</string>
@@ -66,6 +83,9 @@
     <string name="inst_err_mount_esp">Ошибка монтирования ESP.</string>
     <string name="inst_err_efi_bin">Ошибка копирования BOOTX64.EFI.</string>
     <string name="inst_err_efi_mods">Ошибка копирования EFI-модулей.</string>
+    <string name="inst_err_no_esp">ESP не найден, загрузчик пропущен.</string>
+    <string name="inst_err_efi_create">Ошибка создания UEFI-записи.</string>
+    <string name="inst_err_efi_order">Ошибка порядка UEFI-загрузки.</string>
     <string name="status_ok">готово</string>
     <string name="status_error">ошибка</string>
     <string name="refresh_btn">Обновить</string>

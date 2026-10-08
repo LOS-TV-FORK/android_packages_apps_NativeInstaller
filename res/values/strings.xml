@@ -15,6 +15,7 @@
     <string name="mode_title">Mode: %1$s</string>
     <string name="mode_wipe">Whole disk (erase everything)</string>
     <string name="mode_part">Existing partition (format)</string>
+    <string name="mode_alongside">Alongside (shrink, keep other systems)</string>
     <string name="opt_dataimg">data.img instead of data directory</string>
     <string name="opt_datasize_hint">data.img size, MB (0 = maximum)</string>
     <string name="opt_nomodeset">nomodeset in cmdline</string>
@@ -23,6 +24,15 @@
     <!-- Partition -->
     <string name="part_title">Select partition: %1$s</string>
     <string name="part_warn">The partition will be formatted!</string>
+    <string name="part_alongside_warn">Other systems are kept. Pick a partition to shrink (ext4/fat/ntfs) or free space.</string>
+    <string name="part_free_space">Free space (no shrink)</string>
+    <string name="part_scanning">Scanning disk…</string>
+    <string name="part_scan_empty">Scan returned nothing: the engine did not answer. Check installer log.</string>
+    <string name="part_scan_found">Disk map: %1$d partition(s), %2$d free area(s).</string>
+    <string name="scan_title">Systems on %1$s</string>
+    <string name="scan_none">No other systems found</string>
+    <string name="scan_none_sub">The disk looks empty: wipe it or use a partition.</string>
+    <string name="scan_found_sub">Found %1$d system(s). Alongside is preselected.</string>
     <!-- Progress -->
     <string name="progress_title">Installing…</string>
     <!-- Engine -->
@@ -54,6 +64,13 @@
     <string name="inst_err_system_part">Failed to create system partition.</string>
     <string name="inst_err_mkfs_esp">Failed to format ESP.</string>
     <string name="inst_err_mkfs">Filesystem creation error.</string>
+    <string name="inst_err_shrink_unsupported">Cannot shrink this filesystem.</string>
+    <string name="inst_err_shrink_fsck">Filesystem check failed before shrink.</string>
+    <string name="inst_err_shrink_fs">Filesystem shrink failed.</string>
+    <string name="inst_err_shrink_part">Partition shrink failed.</string>
+    <string name="inst_err_no_space">Not enough free space.</string>
+    <string name="inst_err_too_small">Chosen size too small (need %1$s).</string>
+    <string name="inst_err_part_parse">Cannot read partition table.</string>
     <string name="inst_err_mount">Mount error.</string>
     <string name="inst_err_copy_system">System image copy error (%1$s).</string>
     <string name="inst_err_extend_system">System image extend error (%1$s).</string>
@@ -66,6 +83,9 @@
     <string name="inst_err_mount_esp">ESP mount error.</string>
     <string name="inst_err_efi_bin">BOOTX64.EFI copy error.</string>
     <string name="inst_err_efi_mods">EFI modules copy error.</string>
+    <string name="inst_err_no_esp">No ESP found, bootloader skipped.</string>
+    <string name="inst_err_efi_create">UEFI boot entry creation error.</string>
+    <string name="inst_err_efi_order">UEFI boot order error.</string>
     <string name="status_ok">done</string>
     <string name="status_error">error</string>
     <string name="refresh_btn">Refresh</string>

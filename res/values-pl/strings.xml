@@ -65,4 +65,21 @@
     <string name="options_btn">Opcje</string>
     <string name="options_title">Opcje</string>
     <string name="inst_err_same_disk">Cel to nośnik instalacyjny.</string>
+    <string name="mode_alongside">Obok (zmniejsz, zachowaj systemy)</string>
+    <string name="part_alongside_warn">Inne systemy zostają. Wybierz partycję do zmniejszenia (ext4/fat/ntfs) lub wolne miejsce.</string>
+    <string name="part_free_space">Wolne miejsce (bez zmniejszania)</string>
+    <string name="part_scanning">Skanowanie dysku…</string>
+    <string name="scan_title">Systemy na %1$s</string>
+    <string name="scan_none">Brak innych systemów</string>
+    <string name="scan_none_sub">Pusty dysk: wyczyść lub użyj partycji.</string>
+    <string name="scan_found_sub">Znaleziono: %1$d. Wybrano obok.</string>
+    <string name="part_scan_empty">Pusto: silnik nie odpowiada. Sprawdź log.</string>
+    <string name="part_scan_found">Mapa: %1$d partycji, %2$d wolnych.</string>
+    <string name="inst_err_shrink_unsupported">Tego FS nie zmniejszysz.</string>
+    <string name="inst_err_shrink_fsck">Kontrola FS przed zmniejszeniem nieudana.</string>
+    <string name="inst_err_shrink_fs">Zmniejszanie FS nieudane.</string>
+    <string name="inst_err_shrink_part">Zmniejszanie partycji nieudane.</string>
+    <string name="inst_err_no_space">Mało miejsca.</string>
+    <string name="inst_err_too_small">Rozmiar za mały (trzeba %1$s).</string>
+    <string name="inst_err_part_parse">Nieczytelna tablica partycji.</string>
 </resources>

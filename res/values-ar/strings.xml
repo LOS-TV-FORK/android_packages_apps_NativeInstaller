@@ -65,4 +65,21 @@
     <string name="options_btn">خيارات</string>
     <string name="options_title">خيارات</string>
     <string name="inst_err_same_disk">الهدف هو وسيط التثبيت نفسه.</string>
+    <string name="mode_alongside">بجانب (تقليص، الاحتفاظ بالأنظمة)</string>
+    <string name="part_alongside_warn">تُحفظ الأنظمة الأخرى. اختر قسما للتقليص (ext4/fat/ntfs) أو مساحة حرة.</string>
+    <string name="part_free_space">مساحة حرة (بدون تقليص)</string>
+    <string name="part_scanning">جارٍ فحص القرص…</string>
+    <string name="scan_title">الأنظمة على %1$s</string>
+    <string name="scan_none">لا توجد أنظمة أخرى</string>
+    <string name="scan_none_sub">القرص فارغ: امسحه أو استخدم قسما.</string>
+    <string name="scan_found_sub">وجد %1$d نظام. تم اختيار التركيب بجانب.</string>
+    <string name="part_scan_empty">الفحص فارغ: المحرك لم يجب. تحقق من السجل.</string>
+    <string name="part_scan_found">خريطة القرص: %1$d أقسام، %2$d مناطق حرة.</string>
+    <string name="inst_err_shrink_unsupported">لا يمكن تقليص نظام الملفات هذا.</string>
+    <string name="inst_err_shrink_fsck">فشل فحص نظام الملفات قبل التقليص.</string>
+    <string name="inst_err_shrink_fs">فشل تقليص نظام الملفات.</string>
+    <string name="inst_err_shrink_part">فشل تقليص القسم.</string>
+    <string name="inst_err_no_space">مساحة غير كافية.</string>
+    <string name="inst_err_too_small">الحجم صغير (يلزم %1$s).</string>
+    <string name="inst_err_part_parse">تعذر قراءة جدول الأقسام.</string>
 </resources>
