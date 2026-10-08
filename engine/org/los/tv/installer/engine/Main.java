@@ -807,8 +807,8 @@ public final class Main {
         }
         // Drop our stale entries first: every run must leave exactly
         // one LineageOS record, or the firmware menu rots with dups.
-        String verbose = outLines(new String[] {"efibootmgr", "-v"});
-        for (String line : verbose.split("\n")) {
+        String evlist = outLines(new String[] {"efibootmgr", "-v"});
+        for (String line : evlist.split("\n")) {
             line = line.trim();
             if (line.matches("(?i)boot[0-9a-f]{4}\\*?\\s+LineageOS.*")) {
                 String stale =
