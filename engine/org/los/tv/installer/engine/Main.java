@@ -424,6 +424,11 @@ public final class Main {
             log("OK uefi");
             registerUefiBoot(disk, esp, mode);
             log("PCT 85");
+        } else if (!isUefiBoot()) {
+            // BIOS-booted live session (SeaBIOS VMs, legacy HW): there
+            // is no NVRAM to write and no ESP needed. The BIOS grub
+            // path below owns the boot. Not an error.
+            logD("DBG BIOS boot, skipping UEFI block");
         } else {
             fail("no_esp");
             return;
@@ -781,8 +786,18 @@ public final class Main {
      * (what the Calamares UEFI module did). Non-fatal: without it the
      * firmware may keep booting the USB stick first.
      */
+    /** True when booted in UEFI mode (NVRAM exists). BIOS boots must
+     * never touch efibootmgr: it cannot work there by definition. */
+    private static boolean isUefiBoot() {
+        return new java.io.File("/sys/firmware/efi").exists();
+    }
+
     private static void registerUefiBoot(
             String disk, String esp, String mode) {
+        if (!isUefiBoot()) {
+            logD("DBG no UEFI firmware, skipping NVRAM");
+            return;
+        }
         // efivars must be mounted for reads AND writes.
         execQuiet(new String[] {"mount", "-t", "efivarfs", "none",
                 "/sys/firmware/efi/efivars"});
